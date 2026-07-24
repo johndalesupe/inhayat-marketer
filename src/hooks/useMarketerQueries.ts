@@ -9,10 +9,7 @@ import {
 import { marketerApi } from "@/src/lib/api";
 import { marketerKeys } from "@/src/lib/query-keys";
 import { useAppSelector } from "@/src/store/hooks";
-import type {
-  DashboardRange,
-  ReferralStatus,
-} from "@/src/types/marketer";
+import type { DashboardRange, ReferralStatus } from "@/src/types/marketer";
 
 function useApiEnabled() {
   const status = useAppSelector((state) => state.session.status);
@@ -149,6 +146,19 @@ export function usePublishReferral() {
       chatIds: string[];
       language: "uz" | "ru";
     }) => marketerApi.publishReferral(referralId, { chatIds, language }),
+  });
+}
+
+export function usePublicationJob(jobId?: string | null) {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.publication(jobId ?? ""),
+    queryFn: () => marketerApi.publicationJob(jobId ?? ""),
+    enabled: enabled && Boolean(jobId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "completed" || status === "failed" ? false : 1_500;
+    },
   });
 }
 

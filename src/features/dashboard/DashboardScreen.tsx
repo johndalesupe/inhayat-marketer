@@ -148,7 +148,10 @@ function TrendChart({ data }: { data: MarketerDashboard["trend"] }) {
   return (
     <div className="mt-3 h-44 w-full" aria-label="Savdo va bonus trendi">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+        <LineChart
+          data={data}
+          margin={{ top: 5, right: 5, left: 0, bottom: 0 }}
+        >
           <CartesianGrid
             stroke="var(--line)"
             strokeDasharray="3 4"
@@ -248,7 +251,11 @@ function Funnel({ data }: { data: MarketerDashboard["funnel"] }) {
   );
 }
 
-function ActivityList({ items }: { items: MarketerDashboard["recentActivity"] }) {
+function ActivityList({
+  items,
+}: {
+  items: MarketerDashboard["recentActivity"];
+}) {
   if (!items.length) {
     return (
       <p className="py-5 text-center text-xs font-semibold text-[var(--muted)]">
@@ -329,6 +336,18 @@ export function DashboardScreen() {
           </span>
         }
       />
+
+      {!data.program.enabled && (
+        <Panel className="border-[var(--warning-line)] bg-[var(--warning-soft)] p-3.5">
+          <p className="text-sm font-black text-[var(--ink)]">
+            Referal dasturi vaqtincha to&apos;xtatilgan
+          </p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-[var(--muted)]">
+            Mavjud statistika saqlanadi, ammo yangi referal yaratib
+            bo&apos;lmaydi.
+          </p>
+        </Panel>
+      )}
 
       <WalletCard data={data} />
 

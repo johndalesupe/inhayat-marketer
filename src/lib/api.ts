@@ -9,6 +9,7 @@ import type {
   MarketerOrder,
   MarketerProduct,
   MarketerProfile,
+  MarketerPublicationJob,
   MarketerReferral,
   OtpRequestResponse,
   PaginatedData,
@@ -70,7 +71,8 @@ export function apiErrorMessage(
     if (error.code === "ECONNABORTED") {
       return "Server javobi kutilganidan uzoq davom etdi";
     }
-    if (!error.response) return "Internet aloqasini tekshirib qayta urinib ko'ring";
+    if (!error.response)
+      return "Internet aloqasini tekshirib qayta urinib ko'ring";
   }
   return error instanceof Error && error.message ? error.message : fallback;
 }
@@ -128,9 +130,7 @@ export const marketerApi = {
       url: "/api/v1/marketer/products/categories",
     }),
 
-  referrals: (
-    params: PageQuery & { status?: ReferralStatus | "all" },
-  ) =>
+  referrals: (params: PageQuery & { status?: ReferralStatus | "all" }) =>
     request<PaginatedData<MarketerReferral>>({
       url: "/api/v1/marketer/referrals",
       params: {
@@ -171,6 +171,11 @@ export const marketerApi = {
       data: payload,
     }),
 
+  publicationJob: (jobId: string) =>
+    request<MarketerPublicationJob>({
+      url: `/api/v1/marketer/publications/${encodeURIComponent(jobId)}`,
+    }),
+
   requestPhoneOtp: (phoneNumber: string) =>
     request<OtpRequestResponse>({
       url: "/api/v1/marketer/auth/phone/request-otp",
@@ -204,9 +209,7 @@ export const marketerApi = {
       data: payload,
     }),
 
-  botAction: (
-    action: "start" | "stop" | "restart" | "retry",
-  ) =>
+  botAction: (action: "start" | "stop" | "restart" | "retry") =>
     request<MarketerBot>({
       url: `/api/v1/marketer/bot/${action}`,
       method: "POST",

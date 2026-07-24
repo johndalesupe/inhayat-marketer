@@ -3,6 +3,7 @@
 import {
   Check,
   CheckCircle2,
+  CircleX,
   Clipboard,
   Eye,
   Filter,
@@ -15,15 +16,11 @@ import {
   ShoppingBag,
   UsersRound,
 } from "lucide-react";
-import {
-  useCallback,
-  useDeferredValue,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import { clsx } from "clsx";
 import {
   useBotChats,
+  usePublicationJob,
   usePublishReferral,
   useReferrals,
   useUpdateReferral,
@@ -36,10 +33,7 @@ import {
   formatMoney,
   formatPercent,
 } from "@/src/lib/format";
-import type {
-  MarketerReferral,
-  ReferralStatus,
-} from "@/src/types/marketer";
+import type { MarketerReferral, ReferralStatus } from "@/src/types/marketer";
 import { useTelegram } from "@/src/telegram/TelegramProvider";
 import { ProductImage } from "@/src/components/ui/ProductImage";
 import {
@@ -207,7 +201,9 @@ function ReferralCard({
 
       <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] px-3 py-2.5">
         <div>
-          <p className="text-[10px] font-bold text-[var(--muted)]">Konversiya</p>
+          <p className="text-[10px] font-bold text-[var(--muted)]">
+            Konversiya
+          </p>
           <p className="text-xs font-black text-[var(--ink)]">
             {formatPercent(referral.stats.conversionPercent)}
           </p>
@@ -286,6 +282,7 @@ function PublishSheet({
 }) {
   const chatsQuery = useBotChats(Boolean(referral));
   const publish = usePublishReferral();
+  const jobQuery = usePublicationJob(publish.data?.jobId);
   const { haptic } = useTelegram();
   const [selected, setSelected] = useState<string[]>([]);
   const [language, setLanguage] = useState<"uz" | "ru">("uz");
@@ -300,18 +297,46 @@ function PublishSheet({
     >
       {publish.isSuccess ? (
         <div className="py-4 text-center">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--success-soft)] text-[var(--success)]">
-            <CheckCircle2 className="h-6 w-6" />
+          <span
+            className={clsx(
+              "mx-auto flex h-12 w-12 items-center justify-center rounded-full",
+              jobQuery.data?.status === "failed"
+                ? "bg-[var(--danger-soft)] text-[var(--danger)]"
+                : "bg-[var(--success-soft)] text-[var(--success)]",
+            )}
+          >
+            {jobQuery.data?.status === "failed" ? (
+              <CircleX className="h-6 w-6" />
+            ) : (
+              <CheckCircle2 className="h-6 w-6" />
+            )}
           </span>
           <h3 className="mt-3 text-base font-black text-[var(--ink)]">
-            Yuborish navbatga qo’shildi
+            {jobQuery.data?.status === "completed"
+              ? "Xabarlar yuborildi"
+              : jobQuery.data?.status === "failed"
+                ? "Yuborish yakunlanmadi"
+                : "Xabarlar yuborilmoqda"}
           </h3>
           <p className="mt-1 text-sm font-medium text-[var(--muted)]">
-            {publish.data.queued} ta chat uchun xavfsiz yuborish vazifasi
-            yaratildi.
+            {jobQuery.data
+              ? `${jobQuery.data.sentCount}/${jobQuery.data.totalCount} ta chatga yuborildi${
+                  jobQuery.data.failedCount
+                    ? `, ${jobQuery.data.failedCount} ta xatolik`
+                    : ""
+                }.`
+              : `${publish.data.queued} ta chat uchun xavfsiz yuborish vazifasi yaratildi.`}
           </p>
+          {jobQuery.data?.error && (
+            <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-left text-xs font-semibold text-[var(--danger)]">
+              {jobQuery.data.error}
+            </p>
+          )}
           <Button className="mt-4 w-full" onClick={onClose}>
-            Tayyor
+            {jobQuery.data?.status === "queued" ||
+            jobQuery.data?.status === "running"
+              ? "Orqa fonda davom etsin"
+              : "Tayyor"}
           </Button>
         </div>
       ) : chatsQuery.isLoading ? (

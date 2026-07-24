@@ -1,7 +1,4 @@
-import type {
-  DashboardRange,
-  ReferralStatus,
-} from "@/src/types/marketer";
+import type { DashboardRange, ReferralStatus } from "@/src/types/marketer";
 
 export const marketerKeys = {
   all: ["marketer"] as const,
@@ -13,10 +10,9 @@ export const marketerKeys = {
   topProducts: ["marketer", "products", "top"] as const,
   productCategories: ["marketer", "products", "categories"] as const,
   referralsRoot: ["marketer", "referrals"] as const,
-  referrals: (filters: {
-    search: string;
-    status: ReferralStatus | "all";
-  }) => ["marketer", "referrals", filters] as const,
+  referrals: (filters: { search: string; status: ReferralStatus | "all" }) =>
+    ["marketer", "referrals", filters] as const,
+  publication: (jobId: string) => ["marketer", "publications", jobId] as const,
   bot: ["marketer", "bot"] as const,
   botChats: ["marketer", "bot", "chats"] as const,
   orders: (filters: { status: string; search: string }) =>

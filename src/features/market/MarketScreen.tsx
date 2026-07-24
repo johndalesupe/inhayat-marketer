@@ -11,31 +11,21 @@ import {
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
-import {
-  useCallback,
-  useDeferredValue,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { clsx } from "clsx";
 import {
   useCreateReferral,
+  useProfile,
   useProductCategories,
   useProducts,
   useTopProducts,
 } from "@/src/hooks/useMarketerQueries";
 import { useInfiniteSentinel } from "@/src/hooks/useInfiniteSentinel";
-import {
-  apiErrorMessage,
-  createIdempotencyKey,
-} from "@/src/lib/api";
+import { apiErrorMessage, createIdempotencyKey } from "@/src/lib/api";
 import { formatMoney } from "@/src/lib/format";
-import type {
-  MarketerProduct,
-  MarketerReferral,
-} from "@/src/types/marketer";
+import type { MarketerProduct, MarketerReferral } from "@/src/types/marketer";
 import { useTelegram } from "@/src/telegram/TelegramProvider";
 import { ProductImage } from "@/src/components/ui/ProductImage";
 import {
@@ -46,6 +36,7 @@ import {
   FieldError,
   IconButton,
   PageTitle,
+  Panel,
   SectionHeading,
   Skeleton,
   inputClass,
@@ -87,10 +78,12 @@ function ProductCard({
   product,
   topRank,
   onCreate,
+  canCreate = true,
 }: {
   product: MarketerProduct;
   topRank?: number;
   onCreate: (product: MarketerProduct) => void;
+  canCreate?: boolean;
 }) {
   const price =
     product.discountPrice != null && product.discountPrice < product.price
@@ -133,11 +126,11 @@ function ProductCard({
         <Button
           variant="secondary"
           className="mt-2.5 min-h-10 w-full px-2 text-[11px] text-[var(--brand)]"
-          disabled={!product.isAvailable}
+          disabled={!product.isAvailable || !canCreate}
           onClick={() => onCreate(product)}
         >
           <Link2 className="h-3.5 w-3.5" />
-          Referal yaratish
+          {canCreate ? "Referal yaratish" : "Dastur to'xtatilgan"}
         </Button>
       </div>
     </article>
@@ -318,6 +311,7 @@ export function MarketScreen() {
   const [selectedProduct, setSelectedProduct] =
     useState<MarketerProduct | null>(null);
   const topQuery = useTopProducts();
+  const profileQuery = useProfile();
   const categoriesQuery = useProductCategories();
   const productsQuery = useProducts({
     search: deferredSearch,
@@ -342,6 +336,7 @@ export function MarketScreen() {
     Number(sort !== "popular") +
     Number(Boolean(categoryId)) +
     Number(available !== true);
+  const canCreateReferral = profileQuery.data?.program.enabled !== false;
 
   return (
     <div className="space-y-4">
@@ -350,6 +345,18 @@ export function MarketScreen() {
         title="Sotishga tayyor mahsulotlar"
         description="Mahsulotni tanlang va kuzatiladigan shaxsiy havola yarating."
       />
+
+      {!canCreateReferral && (
+        <Panel className="border-[var(--warning-line)] bg-[var(--warning-soft)] p-3.5">
+          <p className="text-sm font-black text-[var(--ink)]">
+            Referal dasturi vaqtincha to&apos;xtatilgan
+          </p>
+          <p className="mt-1 text-xs font-semibold text-[var(--muted)]">
+            Mahsulotlarni ko&apos;rishingiz mumkin, yangi havola yaratish esa
+            boshqaruv panelidan qayta yoqilganda ochiladi.
+          </p>
+        </Panel>
+      )}
 
       {!deferredSearch && !categoryId && (
         <section>
@@ -373,6 +380,7 @@ export function MarketScreen() {
                     product={product}
                     topRank={product.rank ?? index + 1}
                     onCreate={setSelectedProduct}
+                    canCreate={canCreateReferral}
                   />
                 ))}
               </div>
@@ -462,6 +470,7 @@ export function MarketScreen() {
                     key={product.id}
                     product={product}
                     onCreate={setSelectedProduct}
+                    canCreate={canCreateReferral}
                   />
                 ))}
               </div>

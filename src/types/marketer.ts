@@ -37,6 +37,11 @@ export type MarketerProfile = {
   phoneVerified: boolean;
   joinedAt: string;
   wallet: WalletSummary;
+  program: {
+    enabled: boolean;
+    defaultBonusPercent: number;
+    attributionWindowHours: number;
+  };
 };
 
 export type DashboardMetric = {
@@ -88,13 +93,7 @@ export type MarketerCategory = {
 
 export type DashboardActivity = {
   id: string;
-  type:
-    | "view"
-    | "order"
-    | "bonus"
-    | "reversal"
-    | "payout"
-    | "referral";
+  type: "view" | "order" | "bonus" | "reversal" | "payout" | "referral";
   title: string;
   detail?: string | null;
   amount?: number | null;
@@ -114,6 +113,11 @@ export type MarketerDashboard = {
   trend: DashboardTrendPoint[];
   topProducts: MarketerProduct[];
   recentActivity: DashboardActivity[];
+  program: {
+    enabled: boolean;
+    defaultBonusPercent: number;
+    attributionWindowHours: number;
+  };
   generatedAt: string;
 };
 
@@ -140,6 +144,30 @@ export type MarketerReferral = {
   stats: ReferralStats;
   createdAt: string;
   updatedAt: string;
+};
+
+export type PublicationJobStatus =
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed";
+
+export type MarketerPublicationJob = {
+  jobId: string;
+  status: PublicationJobStatus;
+  totalCount: number;
+  sentCount: number;
+  failedCount: number;
+  results: Array<{
+    chatId: number;
+    ok: boolean;
+    messageId?: number;
+    error?: string;
+  }>;
+  error?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
 };
 
 export type BotPermissionSet = {
