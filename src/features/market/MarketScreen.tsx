@@ -29,7 +29,6 @@ import {
   ErrorState,
   FieldError,
   Panel,
-  SectionHeading,
   Skeleton,
   inputClass,
 } from "@/src/components/ui/primitives";
@@ -42,7 +41,6 @@ import {
   useProducts,
   useProfile,
   usePublicationBatch,
-  useTopProducts,
 } from "@/src/hooks/useMarketerQueries";
 import { apiErrorMessage, createIdempotencyKey } from "@/src/lib/api";
 import { formatMoney } from "@/src/lib/format";
@@ -81,7 +79,6 @@ async function copyText(value: string) {
 
 function ProductCard({
   product,
-  topRank,
   onCreate,
   canCreate = true,
   selectionMode = false,
@@ -89,7 +86,6 @@ function ProductCard({
   onToggle,
 }: {
   product: MarketerProduct;
-  topRank?: number;
   onCreate: (product: MarketerProduct) => void;
   canCreate?: boolean;
   selectionMode?: boolean;
@@ -105,7 +101,7 @@ function ProductCard({
   return (
     <article
       className={clsx(
-        "min-w-0 overflow-hidden rounded-[14px] border bg-[var(--surface)] transition",
+        "min-w-0 overflow-hidden rounded-[12px] border bg-[var(--surface)] transition",
         selectionMode && selected
           ? "border-[var(--brand)] ring-2 ring-[var(--brand-ring)]"
           : "border-[var(--line)]",
@@ -129,11 +125,6 @@ function ProductCard({
           alt={product.nameUz}
           className="aspect-[4/5] w-full"
         />
-        {topRank != null && (
-          <span className="absolute left-2 top-2 flex h-6 min-w-6 items-center justify-center rounded-full border border-[var(--brand-line)] bg-[var(--surface-glass)] px-1.5 text-[10px] font-extrabold text-[var(--brand)]">
-            #{topRank}
-          </span>
-        )}
         {selectionMode && (
           <span
             className={clsx(
@@ -157,7 +148,7 @@ function ProductCard({
         )}
       </button>
 
-      <div className="p-2.5">
+      <div className="p-2">
         <p className="line-clamp-2 min-h-[34px] text-[12px] font-bold leading-[17px] text-[var(--ink)]">
           {product.nameUz}
         </p>
@@ -209,11 +200,11 @@ function ProductCard({
 
 function ProductGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-1">
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]"
+          className="overflow-hidden rounded-[12px] border border-[var(--line)] bg-[var(--surface)]"
         >
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
           <div className="space-y-1.5 p-2.5">
@@ -381,25 +372,29 @@ function CategoryStrip({
   categories,
   selectedId,
   loading,
+  error,
+  onRetry,
   onSelect,
 }: {
   categories: MarketerCategory[];
   selectedId: string;
   loading: boolean;
+  error: boolean;
+  onRetry: () => void;
   onSelect: (categoryId: string) => void;
 }) {
   return (
-    <nav
-      aria-label="Mahsulot toifalari"
-      className="sticky top-[var(--app-safe-top)] z-30 -mx-3 border-y border-[var(--line)] bg-[color:var(--surface-glass)] py-2 backdrop-blur-xl"
-    >
-      <div className="flex gap-1.5 overflow-x-auto px-3 [scrollbar-width:none]">
+    <div className="-mx-2.5 border-y border-[var(--line)] bg-[var(--surface)] py-1.5">
+      <nav
+        aria-label="Mahsulot toifalari"
+        className="flex gap-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         <button
           type="button"
           onClick={() => onSelect("")}
           aria-pressed={!selectedId}
           className={clsx(
-            "h-9 shrink-0 rounded-[11px] border px-3.5 text-[11px] font-extrabold transition active:scale-[0.98]",
+            "h-10 shrink-0 rounded-[10px] border px-3 text-[11px] font-extrabold transition active:scale-[0.98]",
             !selectedId
               ? "border-[var(--brand)] bg-[var(--brand)] text-white"
               : "border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]",
@@ -411,7 +406,7 @@ function CategoryStrip({
           ? Array.from({ length: 4 }).map((_, index) => (
               <Skeleton
                 key={index}
-                className="h-9 w-24 shrink-0 rounded-[11px]"
+                className="h-10 w-24 shrink-0 rounded-[10px]"
               />
             ))
           : categories.map((category) => (
@@ -421,7 +416,7 @@ function CategoryStrip({
                 onClick={() => onSelect(category.id)}
                 aria-pressed={selectedId === category.id}
                 className={clsx(
-                  "flex h-9 shrink-0 items-center gap-1.5 rounded-[11px] border px-3.5 text-[11px] font-extrabold transition active:scale-[0.98]",
+                  "flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] border px-3 text-[11px] font-extrabold transition active:scale-[0.98]",
                   selectedId === category.id
                     ? "border-[var(--brand)] bg-[var(--brand)] text-white"
                     : "border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]",
@@ -440,8 +435,22 @@ function CategoryStrip({
                 </span>
               </button>
             ))}
-      </div>
-    </nav>
+      </nav>
+      {error && (
+        <div className="mx-1 mt-1.5 flex min-h-9 items-center justify-between gap-3 rounded-[9px] border border-[var(--danger-line)] bg-[var(--danger-soft)] px-2.5">
+          <p className="text-[10px] font-bold text-[var(--danger)]">
+            Toifalarni yuklab bo&apos;lmadi
+          </p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="min-h-8 shrink-0 px-1.5 text-[10px] font-extrabold text-[var(--danger)]"
+          >
+            Qayta urinish
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -449,12 +458,14 @@ function BulkPublishSheet({
   selection,
   selectionCount,
   category,
+  programEnabled,
   onClose,
   onComplete,
 }: {
   selection: BulkReferralSelection;
   selectionCount: number;
   category?: MarketerCategory;
+  programEnabled: boolean;
   onClose: () => void;
   onComplete: () => void;
 }) {
@@ -466,8 +477,15 @@ function BulkPublishSheet({
   const { haptic } = useTelegram();
   const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
   const [namePrefix, setNamePrefix] = useState("");
-  const [bulkCreateKey] = useState(createIdempotencyKey);
-  const [bulkPublishKey] = useState(createIdempotencyKey);
+  const [submittedPayload, setSubmittedPayload] = useState<
+    | (BulkReferralSelection & {
+        namePrefix?: string;
+        chatIds: string[];
+        createIdempotencyKey: string;
+        publishIdempotencyKey: string;
+      })
+    | null
+  >(null);
   const publishable = useMemo(
     () => chatsQuery.data?.filter((chat) => chat.canPublish) ?? [],
     [chatsQuery.data],
@@ -483,8 +501,11 @@ function BulkPublishSheet({
     batch?.status === "partial" ||
     batch?.status === "failed";
   const failed = batch?.status === "failed";
+  const partial = batch?.status === "partial";
+  const formLocked = mutation.isPending || submittedPayload !== null;
 
   const close = () => {
+    if (mutation.isPending) return;
     if (mutation.isSuccess) onComplete();
     onClose();
   };
@@ -507,6 +528,8 @@ function BulkPublishSheet({
               "mx-auto flex h-12 w-12 items-center justify-center rounded-full border",
               failed
                 ? "border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger)]"
+                : partial
+                  ? "border-[var(--warning-line)] bg-[var(--warning-soft)] text-[var(--warning)]"
                 : "border-[var(--success-line)] bg-[var(--success-soft)] text-[var(--success)]",
             )}
           >
@@ -521,6 +544,8 @@ function BulkPublishSheet({
           <h3 className="mt-3 text-base font-extrabold text-[var(--ink)]">
             {failed
               ? "Yuborish yakunlanmadi"
+              : partial
+                ? "Postlar qisman yuborildi"
               : terminal
                 ? "Postlar yuborildi"
                 : "Postlar tayyorlanmoqda"}
@@ -561,7 +586,8 @@ function BulkPublishSheet({
               </div>
               {batch.failedCount > 0 && (
                 <p className="mt-2 text-[10px] font-bold text-[var(--danger)]">
-                  {batch.failedCount} ta yuborishda xatolik qayd etildi.
+                  {batch.sentCount} ta yuborildi, {batch.failedCount} ta
+                  yuborishda xatolik qayd etildi.
                 </p>
               )}
             </div>
@@ -630,7 +656,8 @@ function BulkPublishSheet({
               value={namePrefix}
               onChange={(event) => setNamePrefix(event.target.value)}
               className={inputClass}
-              maxLength={80}
+              maxLength={50}
+              disabled={formLocked}
               autoComplete="off"
               placeholder={
                 category ? `${category.name} — iyul` : "Telegram — iyul"
@@ -652,6 +679,7 @@ function BulkPublishSheet({
             </div>
             <button
               type="button"
+              disabled={formLocked}
               className="min-h-8 rounded-lg px-2 text-[10px] font-extrabold text-[var(--brand)] active:bg-[var(--brand-soft)]"
               onClick={() =>
                 setSelectedChatIds(
@@ -670,6 +698,7 @@ function BulkPublishSheet({
                 <button
                   type="button"
                   key={chat.id}
+                  disabled={formLocked}
                   onClick={() =>
                     setSelectedChatIds((current) =>
                       active
@@ -718,21 +747,38 @@ function BulkPublishSheet({
               </span>
             </p>
           )}
+          {!programEnabled && (
+            <p className="mt-3 rounded-xl border border-[var(--warning-line)] bg-[var(--warning-soft)] p-3 text-xs font-semibold leading-5 text-[var(--warning)]">
+              Referal dasturi hozir faol emas. Dastur qayta yoqilgach yuborish
+              mumkin.
+            </p>
+          )}
           <Button
             className="mt-3.5 min-h-11 w-full"
-            disabled={!selectedChatIds.length || prefixInvalid}
+            disabled={
+              !selectedChatIds.length || prefixInvalid || !programEnabled
+            }
             loading={mutation.isPending}
             onClick={() => {
-              mutation.mutate(
-                {
+              const payload =
+                submittedPayload ??
+                ({
                   ...selection,
                   ...(namePrefix.trim()
                     ? { namePrefix: namePrefix.trim() }
                     : {}),
                   chatIds: selectedChatIds,
-                  createIdempotencyKey: bulkCreateKey,
-                  publishIdempotencyKey: bulkPublishKey,
-                },
+                  createIdempotencyKey: createIdempotencyKey(),
+                  publishIdempotencyKey: createIdempotencyKey(),
+                } as BulkReferralSelection & {
+                  namePrefix?: string;
+                  chatIds: string[];
+                  createIdempotencyKey: string;
+                  publishIdempotencyKey: string;
+                });
+              if (!submittedPayload) setSubmittedPayload(payload);
+              mutation.mutate(
+                payload,
                 {
                   onSuccess: () => haptic("success"),
                   onError: () => haptic("error"),
@@ -741,7 +787,9 @@ function BulkPublishSheet({
             }}
           >
             <Send className="h-4 w-4" />
-            {selectedChatIds.length
+            {mutation.isError
+              ? "Xavfsiz qayta urinish"
+              : selectedChatIds.length
               ? `${selectionCount} ta referalni ${selectedChatIds.length} ta chatga yuborish`
               : "Chatlarni tanlang"}
           </Button>
@@ -760,7 +808,6 @@ export function MarketScreen() {
   const [wholeCategory, setWholeCategory] = useState(false);
   const [bulkSheetOpen, setBulkSheetOpen] = useState(false);
 
-  const topQuery = useTopProducts();
   const profileQuery = useProfile();
   const categoriesQuery = useProductCategories();
   const productsQuery = useProducts({
@@ -788,7 +835,8 @@ export function MarketScreen() {
     availableProducts.length > 0 &&
     availableProducts.every((product) => selectedIds.has(product.id));
   const selectionCount = wholeCategory ? totalProducts : selectedIds.size;
-  const canCreateReferral = profileQuery.data?.program.enabled !== false;
+  const canCreateReferral =
+    profileQuery.isSuccess && profileQuery.data.program.enabled;
 
   const loadMore = useCallback(() => {
     if (productsQuery.hasNextPage && !productsQuery.isFetchingNextPage) {
@@ -840,15 +888,39 @@ export function MarketScreen() {
   }, [categoryId, selectedIds, wholeCategory]);
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-2">
       <CategoryStrip
         categories={categoriesQuery.data ?? []}
         selectedId={categoryId}
         loading={categoriesQuery.isLoading}
+        error={categoriesQuery.isError}
+        onRetry={() => void categoriesQuery.refetch()}
         onSelect={handleCategorySelect}
       />
 
-      {!canCreateReferral && (
+      {profileQuery.isError && (
+        <Panel className="border-[var(--danger-line)] bg-[var(--danger-soft)] p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-extrabold text-[var(--ink)]">
+                Referal dasturi holati aniqlanmadi
+              </p>
+              <p className="mt-0.5 text-[10px] font-semibold text-[var(--muted)]">
+                Xavfsizlik uchun referal yaratish vaqtincha yopildi.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void profileQuery.refetch()}
+              className="min-h-9 shrink-0 rounded-[9px] border border-[var(--danger-line)] bg-white px-2.5 text-[10px] font-extrabold text-[var(--danger)]"
+            >
+              Qayta urinish
+            </button>
+          </div>
+        </Panel>
+      )}
+
+      {profileQuery.isSuccess && !profileQuery.data.program.enabled && (
         <Panel className="border-[var(--warning-line)] bg-[var(--warning-soft)] p-3">
           <p className="text-sm font-extrabold text-[var(--ink)]">
             Referal dasturi vaqtincha to&apos;xtatilgan
@@ -860,44 +932,8 @@ export function MarketScreen() {
         </Panel>
       )}
 
-      {!categoryId && !bulkMode && (
-        <section>
-          <SectionHeading
-            title="Top mahsulotlar"
-            caption="Eng yaxshi savdo natijasiga ega mahsulotlar"
-          />
-          <div className="mt-2.5">
-            {topQuery.isLoading ? (
-              <ProductGridSkeleton count={4} />
-            ) : topQuery.isError ? (
-              <ErrorState
-                description={apiErrorMessage(topQuery.error)}
-                retry={() => void topQuery.refetch()}
-              />
-            ) : topQuery.data?.length ? (
-              <div className="grid grid-cols-2 gap-2">
-                {topQuery.data.slice(0, 4).map((product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    topRank={product.rank ?? index + 1}
-                    onCreate={setSelectedProduct}
-                    canCreate={canCreateReferral}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="Top ro'yxat shakllanmoqda"
-                description="Yetarli savdo ma'lumoti yig'ilganda top mahsulotlar shu yerda chiqadi."
-              />
-            )}
-          </div>
-        </section>
-      )}
-
-      <section>
-        <div className="flex min-h-9 items-center justify-between gap-3">
+      <section className="-mx-2.5">
+        <div className="flex min-h-9 items-center justify-between gap-3 px-1">
           <p className="text-[11px] font-extrabold text-[var(--muted)]">
             {productsQuery.isLoading
               ? "Mahsulotlar yuklanmoqda"
@@ -926,7 +962,7 @@ export function MarketScreen() {
         </div>
 
         {bulkMode && (
-          <Panel className="sticky top-[calc(var(--app-safe-top)+56px)] z-20 mb-2.5 mt-1.5 bg-[color:var(--surface-glass)] p-2.5 backdrop-blur-xl">
+          <Panel className="mx-1 mb-1.5 mt-1 bg-[var(--surface)] p-2.5">
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-[var(--brand-soft)] text-[var(--brand)]">
                 <PackageCheck className="h-4.5 w-4.5" />
@@ -984,17 +1020,17 @@ export function MarketScreen() {
           </Panel>
         )}
 
-        <div className="mt-2">
-          {productsQuery.isLoading ? (
+        <div className="mt-1">
+          {productsQuery.isLoading && !products.length ? (
             <ProductGridSkeleton />
-          ) : productsQuery.isError ? (
+          ) : productsQuery.isError && !products.length ? (
             <ErrorState
               description={apiErrorMessage(productsQuery.error)}
               retry={() => void productsQuery.refetch()}
             />
           ) : products.length ? (
             <>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -1010,10 +1046,18 @@ export function MarketScreen() {
 
               <div
                 ref={sentinel}
-                className="mt-3 flex min-h-14 items-center justify-center"
+                className="mt-2 flex min-h-12 items-center justify-center px-1"
                 aria-live="polite"
               >
-                {productsQuery.hasNextPage ? (
+                {productsQuery.isFetchNextPageError ? (
+                  <button
+                    type="button"
+                    onClick={() => void productsQuery.fetchNextPage()}
+                    className="min-h-10 rounded-[10px] border border-[var(--danger-line)] bg-[var(--danger-soft)] px-3 text-[10px] font-extrabold text-[var(--danger)]"
+                  >
+                    Davomini yuklab bo&apos;lmadi · Qayta urinish
+                  </button>
+                ) : productsQuery.hasNextPage ? (
                   <div className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-[10px] font-bold text-[var(--muted)]">
                     {productsQuery.isFetchingNextPage ? (
                       <LoaderCircle className="h-4 w-4 animate-spin text-[var(--brand)]" />
@@ -1055,6 +1099,7 @@ export function MarketScreen() {
           selection={bulkSelection}
           selectionCount={selectionCount}
           category={selectedCategory}
+          programEnabled={canCreateReferral}
           onClose={() => setBulkSheetOpen(false)}
           onComplete={leaveBulkMode}
         />

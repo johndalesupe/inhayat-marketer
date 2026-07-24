@@ -7,3 +7,4 @@ Creating turbopack project {
   testMode: true
 }
 
+ GET /market 200 in 1157ms (next.js: 1008ms, application-code: 149ms)
