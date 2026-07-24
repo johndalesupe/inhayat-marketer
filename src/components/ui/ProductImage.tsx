@@ -16,7 +16,7 @@ export function ProductImage({
   return (
     <div
       className={clsx(
-        "relative overflow-hidden bg-[var(--surface-muted)]",
+        "relative overflow-hidden bg-[var(--surface-muted)] ring-1 ring-inset ring-black/[0.025]",
         className,
       )}
     >
@@ -37,4 +37,3 @@ export function ProductImage({
     </div>
   );
 }
-

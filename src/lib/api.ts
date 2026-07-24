@@ -1,12 +1,16 @@
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 import type {
   ApiEnvelope,
+  BulkReferralCreateResult,
+  BulkReferralPublishResult,
+  BulkReferralSelection,
   DashboardRange,
   MarketerBot,
   MarketerBotChat,
   MarketerCategory,
   MarketerDashboard,
   MarketerOrder,
+  MarketerPublicationBatch,
   MarketerProduct,
   MarketerProfile,
   MarketerPublicationJob,
@@ -151,6 +155,32 @@ export const marketerApi = {
       headers: { "Idempotency-Key": payload.idempotencyKey },
     }),
 
+  bulkCreateReferrals: (
+    payload: BulkReferralSelection & {
+      namePrefix?: string;
+      idempotencyKey: string;
+    },
+  ) =>
+    request<BulkReferralCreateResult>({
+      url: "/api/v1/marketer/referrals/bulk",
+      method: "POST",
+      data: payload,
+      headers: { "Idempotency-Key": payload.idempotencyKey },
+    }),
+
+  bulkPublishReferrals: (payload: {
+    referralIds: string[];
+    chatIds: string[];
+    languages: Array<"uz" | "ru">;
+    idempotencyKey: string;
+  }) =>
+    request<BulkReferralPublishResult>({
+      url: "/api/v1/marketer/referrals/bulk/publish",
+      method: "POST",
+      data: payload,
+      headers: { "Idempotency-Key": payload.idempotencyKey },
+    }),
+
   updateReferral: (
     referralId: string,
     payload: { name?: string; status?: ReferralStatus },
@@ -174,6 +204,11 @@ export const marketerApi = {
   publicationJob: (jobId: string) =>
     request<MarketerPublicationJob>({
       url: `/api/v1/marketer/publications/${encodeURIComponent(jobId)}`,
+    }),
+
+  publicationBatch: (batchId: string) =>
+    request<MarketerPublicationBatch>({
+      url: `/api/v1/marketer/publications/batches/${encodeURIComponent(batchId)}`,
     }),
 
   requestPhoneOtp: (phoneNumber: string) =>

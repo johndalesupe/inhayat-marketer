@@ -9,7 +9,11 @@ import {
 import { marketerApi } from "@/src/lib/api";
 import { marketerKeys } from "@/src/lib/query-keys";
 import { useAppSelector } from "@/src/store/hooks";
-import type { DashboardRange, ReferralStatus } from "@/src/types/marketer";
+import type {
+  BulkReferralSelection,
+  DashboardRange,
+  ReferralStatus,
+} from "@/src/types/marketer";
 
 function useApiEnabled() {
   const status = useAppSelector((state) => state.session.status);
@@ -117,6 +121,46 @@ export function useCreateReferral() {
   });
 }
 
+export function useBulkReferralPublication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      payload: BulkReferralSelection & {
+        namePrefix?: string;
+        chatIds: string[];
+        createIdempotencyKey: string;
+        publishIdempotencyKey: string;
+      },
+    ) => {
+      const created = await marketerApi.bulkCreateReferrals({
+        ...(payload.productIds
+          ? { productIds: payload.productIds }
+          : {
+              categoryId: payload.categoryId,
+              allInCategory: true as const,
+            }),
+        ...(payload.namePrefix ? { namePrefix: payload.namePrefix } : {}),
+        idempotencyKey: payload.createIdempotencyKey,
+      });
+      const published = await marketerApi.bulkPublishReferrals({
+        referralIds: created.referrals.map((referral) => referral.id),
+        chatIds: payload.chatIds,
+        languages: ["uz", "ru"],
+        idempotencyKey: payload.publishIdempotencyKey,
+      });
+      return { created, published };
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: marketerKeys.referralsRoot,
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["marketer", "dashboard"],
+      });
+    },
+  });
+}
+
 export function useUpdateReferral() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -158,6 +202,23 @@ export function usePublicationJob(jobId?: string | null) {
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       return status === "completed" || status === "failed" ? false : 1_500;
+    },
+  });
+}
+
+export function usePublicationBatch(batchId?: string | null) {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.publicationBatch(batchId ?? ""),
+    queryFn: () => marketerApi.publicationBatch(batchId ?? ""),
+    enabled: enabled && Boolean(batchId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "completed" ||
+        status === "partial" ||
+        status === "failed"
+        ? false
+        : 1_500;
     },
   });
 }

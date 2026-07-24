@@ -54,6 +54,16 @@ const otpSchema = yup.object({
 type PhoneForm = yup.InferType<typeof phoneSchema>;
 type OtpForm = yup.InferType<typeof otpSchema>;
 
+function AccountHeading() {
+  return (
+    <PageTitle
+      eyebrow="Shaxsiy kabinet"
+      title="Hisob"
+      description="Profil, hamyon va marketer vositalarini boshqaring."
+    />
+  );
+}
+
 function maskedPhone(value: string) {
   if (value.includes("*")) return value;
   const digits = value.replace(/\D/g, "");
@@ -160,6 +170,7 @@ function PhoneVerificationSheet({
                 international
                 defaultCountry="UZ"
                 countryCallingCodeEditable={false}
+                className="rounded-xl border-[var(--line-strong)] bg-white focus-within:border-[var(--brand)]"
                 value={field.value}
                 onChange={(value) => field.onChange(value ?? "")}
                 onBlur={field.onBlur}
@@ -169,7 +180,7 @@ function PhoneVerificationSheet({
           />
           <FieldError message={phoneForm.formState.errors.phoneNumber?.message} />
           {requestOtp.isError && (
-            <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
+            <p className="mt-3 rounded-lg border border-[var(--danger-line)] bg-[var(--danger-soft)] p-2.5 text-xs font-semibold text-[var(--danger)]">
               {apiErrorMessage(requestOtp.error, "SMS kod yuborilmadi")}
             </p>
           )}
@@ -206,12 +217,12 @@ function PhoneVerificationSheet({
                 containerStyle="grid grid-cols-6 gap-2"
                 inputStyle={{
                   width: "100%",
-                  height: "50px",
-                  border: "1px solid var(--line-strong)",
-                  borderRadius: "12px",
-                  background: "var(--surface)",
-                  color: "var(--ink)",
-                  fontSize: "18px",
+                  height: "46px",
+                  border: "1px solid #d0d5dd",
+                  borderRadius: "10px",
+                  background: "#ffffff",
+                  color: "#101828",
+                  fontSize: "17px",
                   fontWeight: 800,
                   outline: "none",
                 }}
@@ -228,7 +239,7 @@ function PhoneVerificationSheet({
           />
           <FieldError message={otpForm.formState.errors.code?.message} />
           {verifyOtp.isError && (
-            <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
+            <p className="mt-3 rounded-lg border border-[var(--danger-line)] bg-[var(--danger-soft)] p-2.5 text-xs font-semibold text-[var(--danger)]">
               {apiErrorMessage(verifyOtp.error, "Kod tasdiqlanmadi")}
             </p>
           )}
@@ -255,8 +266,8 @@ function PhoneVerificationSheet({
 
       {phase === "done" && (
         <div className="py-3 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--success-soft)] text-[var(--success)]">
-            <BadgeCheck className="h-7 w-7" />
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[var(--success-line)] bg-[var(--success-soft)] text-[var(--success)]">
+            <BadgeCheck className="h-6 w-6" />
           </span>
           <p className="mt-3 text-sm font-bold text-[var(--muted)]">
             {phoneDisplay}
@@ -286,17 +297,17 @@ function AccountLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 border-b border-[var(--line)] px-3 py-3.5 last:border-0 active:bg-[var(--surface-muted)]"
+      className="flex items-center gap-2.5 border-b border-[var(--line)] px-3 py-3 last:border-0 active:bg-[var(--surface-muted)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--brand)]"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand)]">
-        <Icon className="h-4.5 w-4.5" />
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+        <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2 text-sm font-extrabold text-[var(--ink)]">
+        <span className="flex items-center gap-2 text-[13px] font-extrabold text-[var(--ink)]">
           {title}
           {badge && <StatusChip tone="warning">{badge}</StatusChip>}
         </span>
-        <span className="mt-0.5 block text-[11px] font-medium text-[var(--muted)]">
+        <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--muted)]">
           {description}
         </span>
       </span>
@@ -317,8 +328,8 @@ export function AccountScreen() {
   if (query.isLoading && !profile) return <PageSkeleton />;
   if (query.isError && !profile) {
     return (
-      <div className="space-y-4">
-        <PageTitle title="Hisob" />
+      <div className="space-y-3">
+        <AccountHeading />
         <ErrorState
           description={apiErrorMessage(query.error)}
           retry={() => void query.refetch()}
@@ -329,16 +340,12 @@ export function AccountScreen() {
   if (!profile) return null;
 
   return (
-    <div className="space-y-4">
-      <PageTitle
-        eyebrow="Shaxsiy kabinet"
-        title="Hisob"
-        description="Profil, hamyon va marketer vositalarini boshqaring."
-      />
+    <div className="space-y-3">
+      <AccountHeading />
 
-      <Panel className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-[var(--brand-line)] bg-[var(--brand-soft)] text-base font-black text-[var(--brand)]">
+      <Panel className="rounded-2xl p-3.5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-sm font-black text-[var(--brand)]">
             {profile.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -353,45 +360,50 @@ export function AccountScreen() {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-black text-[var(--ink)]">
+            <p className="truncate text-[15px] font-black text-[var(--ink)]">
               {profile.firstName} {profile.lastName ?? ""}
             </p>
-            <p className="mt-0.5 truncate text-xs font-semibold text-[var(--muted)]">
+            <p className="mt-0.5 truncate text-[11px] font-semibold text-[var(--muted)]">
               {profile.username ? `@${profile.username}` : "Telegram marketer"}
             </p>
-            <div className="mt-1.5">
-              <StatusChip tone="brand">
+            <div className="mt-1">
+              <span className="inline-flex min-h-5 items-center rounded-full border border-[var(--brand-line)] bg-[var(--brand-soft)] px-2 text-[9px] font-extrabold text-[var(--brand)]">
                 {formatDate(profile.joinedAt)} dan beri
-              </StatusChip>
+              </span>
             </div>
           </div>
         </div>
       </Panel>
 
-      <Panel className="overflow-hidden border-[var(--brand-line)]">
-        <div className="bg-[var(--brand)] p-4 text-white">
-          <div className="flex items-center gap-2 text-xs font-bold text-white/75">
-            <WalletCards className="h-4 w-4" />
-            Marketer hamyoni
+      <Panel className="overflow-hidden rounded-2xl border-[var(--brand-line)]">
+        <div className="flex items-start justify-between gap-3 p-4">
+          <div>
+            <div className="flex items-center gap-2 text-[11px] font-bold text-[var(--muted)]">
+              <WalletCards className="h-3.5 w-3.5 text-[var(--brand)]" />
+              Marketer hamyoni
+            </div>
+            <p className="mt-1 text-[24px] font-black tracking-[-0.04em] text-[var(--ink)]">
+              {formatMoney(profile.wallet.availableBalance)}
+            </p>
           </div>
-          <p className="mt-1 text-2xl font-black tracking-[-0.035em]">
-            {formatMoney(profile.wallet.availableBalance)}
-          </p>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+            <WalletCards className="h-4 w-4" />
+          </span>
         </div>
-        <div className="grid grid-cols-2 divide-x divide-[var(--line)]">
-          <div className="p-3">
-            <p className="text-[10px] font-bold text-[var(--muted)]">
+        <div className="grid grid-cols-2 divide-x divide-[var(--line)] border-t border-[var(--line)] bg-[var(--surface-raised)]">
+          <div className="px-3 py-2.5">
+            <p className="text-[9px] font-bold text-[var(--muted)]">
               Kutilayotgan bonus
             </p>
-            <p className="mt-1 text-xs font-black text-[var(--ink)]">
+            <p className="mt-0.5 text-xs font-black text-[var(--ink)]">
               {formatMoney(profile.wallet.pendingBalance)}
             </p>
           </div>
-          <div className="p-3">
-            <p className="text-[10px] font-bold text-[var(--muted)]">
+          <div className="px-3 py-2.5">
+            <p className="text-[9px] font-bold text-[var(--muted)]">
               Jami yechilgan
             </p>
-            <p className="mt-1 text-xs font-black text-[var(--ink)]">
+            <p className="mt-0.5 text-xs font-black text-[var(--ink)]">
               {formatMoney(profile.wallet.totalPaid)}
             </p>
           </div>
@@ -400,17 +412,18 @@ export function AccountScreen() {
 
       {!profile.phoneVerified && (
         <button
+          type="button"
           onClick={() => setPhoneOpen(true)}
-          className="flex w-full items-center gap-3 rounded-[18px] border border-[var(--warning-line)] bg-[var(--warning-soft)] p-3.5 text-left"
+          className="flex w-full items-center gap-2.5 rounded-2xl border border-[var(--warning-line)] bg-[var(--warning-soft)] p-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--warning)]">
-            <Phone className="h-4.5 w-4.5" />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--warning-line)] bg-[var(--surface)] text-[var(--warning)]">
+            <Phone className="h-4 w-4" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-extrabold text-[var(--ink)]">
+            <span className="block text-[13px] font-extrabold text-[var(--ink)]">
               Telefon raqamini tasdiqlang
             </span>
-            <span className="mt-0.5 block text-[11px] font-medium text-[var(--muted)]">
+            <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--muted)]">
               Hamyon xavfsizligi va muhim xabarlar uchun
             </span>
           </span>
@@ -418,7 +431,7 @@ export function AccountScreen() {
         </button>
       )}
 
-      <Panel className="overflow-hidden">
+      <Panel className="overflow-hidden rounded-2xl">
         <AccountLink
           href="/account/bot"
           icon={Bot}
@@ -433,33 +446,34 @@ export function AccountScreen() {
         />
       </Panel>
 
-      <Panel className="overflow-hidden">
+      <Panel className="overflow-hidden rounded-2xl">
         <button
+          type="button"
           onClick={() => openTelegramLink(supportUrl)}
-          className="flex w-full items-center gap-3 border-b border-[var(--line)] px-3 py-3.5 text-left active:bg-[var(--surface-muted)]"
+          className="flex w-full items-center gap-2.5 border-b border-[var(--line)] px-3 py-3 text-left active:bg-[var(--surface-muted)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--brand)]"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--muted)]">
-            <CircleHelp className="h-4.5 w-4.5" />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
+            <CircleHelp className="h-4 w-4" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-extrabold text-[var(--ink)]">
+            <span className="block text-[13px] font-extrabold text-[var(--ink)]">
               Yordam markazi
             </span>
-            <span className="mt-0.5 block text-[11px] font-medium text-[var(--muted)]">
+            <span className="mt-0.5 block text-[10px] font-medium leading-4 text-[var(--muted)]">
               Operator bilan Telegram orqali bog’lanish
             </span>
           </span>
           <ChevronRight className="h-4 w-4 text-[var(--muted-light)]" />
         </button>
-        <div className="flex items-center gap-3 px-3 py-3.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--muted)]">
-            <LockKeyhole className="h-4.5 w-4.5" />
+        <div className="flex items-center gap-2.5 px-3 py-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
+            <LockKeyhole className="h-4 w-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-extrabold text-[var(--ink)]">
+            <p className="text-[13px] font-extrabold text-[var(--ink)]">
               Xavfsiz sessiya
             </p>
-            <p className="mt-0.5 text-[11px] font-medium text-[var(--muted)]">
+            <p className="mt-0.5 text-[10px] font-medium leading-4 text-[var(--muted)]">
               Hisob faqat tasdiqlangan Telegram sessiyasida ishlaydi
             </p>
           </div>

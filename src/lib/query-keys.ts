@@ -13,6 +13,8 @@ export const marketerKeys = {
   referrals: (filters: { search: string; status: ReferralStatus | "all" }) =>
     ["marketer", "referrals", filters] as const,
   publication: (jobId: string) => ["marketer", "publications", jobId] as const,
+  publicationBatch: (batchId: string) =>
+    ["marketer", "publications", "batches", batchId] as const,
   bot: ["marketer", "bot"] as const,
   botChats: ["marketer", "bot", "chats"] as const,
   orders: (filters: { status: string; search: string }) =>

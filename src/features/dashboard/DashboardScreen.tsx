@@ -37,13 +37,11 @@ import type {
   MarketerDashboard,
 } from "@/src/types/marketer";
 import {
-  EmptyState,
   ErrorState,
   PageSkeleton,
   PageTitle,
   Panel,
   SectionHeading,
-  StatusChip,
 } from "@/src/components/ui/primitives";
 import { ProductImage } from "@/src/components/ui/ProductImage";
 
@@ -52,6 +50,46 @@ const ranges: Array<{ value: DashboardRange; label: string }> = [
   { value: "30d", label: "30 kun" },
   { value: "90d", label: "90 kun" },
 ];
+
+function ScreenHeading({
+  eyebrow,
+  title,
+  description,
+  accent = false,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  accent?: boolean;
+}) {
+  return (
+    <PageTitle
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      action={
+        accent ? (
+        <span
+          aria-hidden="true"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]"
+        >
+          <Sparkles className="h-4.5 w-4.5" />
+        </span>
+        ) : undefined
+      }
+    />
+  );
+}
+
+function CompactHeading({
+  title,
+  caption,
+}: {
+  title: string;
+  caption?: string;
+}) {
+  return <SectionHeading title={title} caption={caption} />;
+}
 
 function MetricCard({
   icon,
@@ -67,15 +105,15 @@ function MetricCard({
   const change = metric.changePercent;
   const rising = (change ?? 0) >= 0;
   return (
-    <Panel className="min-w-0 p-3.5">
+    <Panel className="min-w-0 rounded-2xl p-3">
       <div className="flex items-start justify-between gap-2">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--brand)]">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
           {icon}
         </span>
         {change != null && (
           <span
             className={clsx(
-              "flex items-center gap-0.5 text-[10px] font-extrabold",
+              "flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold",
               rising ? "text-[var(--success)]" : "text-[var(--danger)]",
             )}
           >
@@ -88,10 +126,10 @@ function MetricCard({
           </span>
         )}
       </div>
-      <p className="mt-3 truncate text-[11px] font-bold text-[var(--muted)]">
+      <p className="mt-2.5 truncate text-[10px] font-bold text-[var(--muted)]">
         {label}
       </p>
-      <p className="mt-0.5 truncate text-lg font-black tracking-[-0.025em] text-[var(--ink)]">
+      <p className="mt-0.5 truncate text-[17px] font-black tracking-[-0.03em] text-[var(--ink)]">
         {formatter(metric.value)}
       </p>
     </Panel>
@@ -100,33 +138,35 @@ function MetricCard({
 
 function WalletCard({ data }: { data: MarketerDashboard }) {
   return (
-    <Panel className="overflow-hidden border-[var(--brand-line)] bg-[var(--brand)] text-white">
+    <Panel className="overflow-hidden rounded-2xl border-[var(--brand-line)]">
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold text-white/72">
+            <p className="text-[11px] font-bold text-[var(--muted)]">
               Ishlatish mumkin bo’lgan balans
             </p>
-            <p className="mt-1 text-[28px] font-black tracking-[-0.04em]">
+            <p className="mt-1 text-[26px] font-black tracking-[-0.045em] text-[var(--ink)]">
               {formatMoney(data.wallet.availableBalance)}
             </p>
           </div>
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-white/10">
-            <Banknote className="h-5 w-5" />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+            <Banknote className="h-4.5 w-4.5" />
           </span>
         </div>
-        <div className="mt-4 grid grid-cols-2 divide-x divide-white/15 rounded-xl border border-white/15 bg-black/10">
+        <div className="mt-3 grid grid-cols-2 divide-x divide-[var(--line)] overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--surface-raised)]">
           <div className="px-3 py-2.5">
-            <p className="text-[10px] font-bold text-white/65">
+            <p className="text-[9px] font-bold leading-4 text-[var(--muted)]">
               Tasdiqlanishi kutilmoqda
             </p>
-            <p className="mt-0.5 truncate text-sm font-extrabold">
+            <p className="mt-0.5 truncate text-xs font-extrabold text-[var(--ink)]">
               {formatMoney(data.wallet.pendingBalance)}
             </p>
           </div>
           <div className="px-3 py-2.5">
-            <p className="text-[10px] font-bold text-white/65">Jami topildi</p>
-            <p className="mt-0.5 truncate text-sm font-extrabold">
+            <p className="text-[9px] font-bold leading-4 text-[var(--muted)]">
+              Jami topildi
+            </p>
+            <p className="mt-0.5 truncate text-xs font-extrabold text-[var(--ink)]">
               {formatMoney(data.wallet.totalEarned)}
             </p>
           </div>
@@ -139,22 +179,26 @@ function WalletCard({ data }: { data: MarketerDashboard }) {
 function TrendChart({ data }: { data: MarketerDashboard["trend"] }) {
   if (!data.length) {
     return (
-      <div className="flex h-44 items-center justify-center text-center text-xs font-semibold text-[var(--muted)]">
+      <div className="flex h-40 items-center justify-center text-center text-xs font-semibold text-[var(--muted)]">
         Tanlangan davr uchun trend ma’lumoti hali yo’q
       </div>
     );
   }
 
   return (
-    <div className="mt-3 h-44 w-full" aria-label="Savdo va bonus trendi">
+    <div
+      className="mt-3 h-40 w-full"
+      role="img"
+      aria-label="Savdo va bonus trendi"
+    >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={data}
-          margin={{ top: 5, right: 5, left: 0, bottom: 0 }}
+          margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
         >
           <CartesianGrid
-            stroke="var(--line)"
-            strokeDasharray="3 4"
+            stroke="#e4e7ec"
+            strokeDasharray="2 4"
             vertical={false}
           />
           <XAxis
@@ -162,7 +206,7 @@ function TrendChart({ data }: { data: MarketerDashboard["trend"] }) {
             axisLine={false}
             tickLine={false}
             minTickGap={22}
-            tick={{ fill: "var(--muted)", fontSize: 10, fontWeight: 700 }}
+            tick={{ fill: "#98a2b3", fontSize: 10, fontWeight: 700 }}
             tickFormatter={(value: string) =>
               new Date(value).toLocaleDateString("uz-UZ", {
                 day: "2-digit",
@@ -172,12 +216,14 @@ function TrendChart({ data }: { data: MarketerDashboard["trend"] }) {
           />
           <Tooltip
             contentStyle={{
-              border: "1px solid var(--line)",
-              borderRadius: 12,
-              background: "var(--surface)",
-              color: "var(--ink)",
+              border: "1px solid #e4e7ec",
+              borderRadius: 10,
+              background: "#ffffff",
+              color: "#101828",
               fontSize: 12,
+              boxShadow: "none",
             }}
+            cursor={{ stroke: "#d0d5dd", strokeDasharray: "3 3" }}
             formatter={(value, name) => [
               formatMoney(Number(value ?? 0)),
               name === "salesAmount" ? "Savdo" : "Bonus",
@@ -186,17 +232,18 @@ function TrendChart({ data }: { data: MarketerDashboard["trend"] }) {
           <Line
             type="monotone"
             dataKey="salesAmount"
-            stroke="var(--brand)"
-            strokeWidth={2.5}
+            stroke="#2563eb"
+            strokeWidth={2.25}
             dot={false}
-            activeDot={{ r: 4, fill: "var(--brand)" }}
+            activeDot={{ r: 3.5, fill: "#2563eb", stroke: "#ffffff" }}
           />
           <Line
             type="monotone"
             dataKey="bonusAmount"
-            stroke="var(--warning)"
-            strokeWidth={2}
+            stroke="#94a3b8"
+            strokeWidth={1.75}
             dot={false}
+            activeDot={{ r: 3.5, fill: "#64748b", stroke: "#ffffff" }}
           />
         </LineChart>
       </ResponsiveContainer>
@@ -222,12 +269,12 @@ function Funnel({ data }: { data: MarketerDashboard["funnel"] }) {
   ];
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (
-    <div className="mt-3 space-y-3">
+    <div className="mt-3 space-y-2.5">
       {rows.map((row) => {
         const Icon = row.icon;
         return (
           <div key={row.label}>
-            <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px]">
               <span className="flex items-center gap-2 font-bold text-[var(--muted)]">
                 <Icon className="h-3.5 w-3.5 text-[var(--brand)]" />
                 {row.label}
@@ -258,20 +305,20 @@ function ActivityList({
 }) {
   if (!items.length) {
     return (
-      <p className="py-5 text-center text-xs font-semibold text-[var(--muted)]">
+      <p className="py-4 text-center text-xs font-semibold text-[var(--muted)]">
         Faollik paydo bo’lganda shu yerda ko’rinadi
       </p>
     );
   }
   return (
-    <div className="mt-2 divide-y divide-[var(--line)]">
+    <div className="mt-1.5 divide-y divide-[var(--line)]">
       {items.slice(0, 6).map((item) => (
-        <div key={item.id} className="flex items-center gap-3 py-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand)]">
+        <div key={item.id} className="flex items-center gap-2.5 py-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
             {item.type === "bonus" || item.type === "payout" ? (
-              <BadgeDollarSign className="h-4 w-4" />
+              <BadgeDollarSign className="h-3.5 w-3.5" />
             ) : (
-              <ReceiptText className="h-4 w-4" />
+              <ReceiptText className="h-3.5 w-3.5" />
             )}
           </span>
           <div className="min-w-0 flex-1">
@@ -309,8 +356,8 @@ export function DashboardScreen() {
   if (query.isLoading) return <PageSkeleton />;
   if (query.isError || !data) {
     return (
-      <div className="space-y-4">
-        <PageTitle
+      <div className="space-y-3">
+        <ScreenHeading
           eyebrow="Marketer paneli"
           title="Natijalar markazi"
           description="Savdo, auditoriya va bonuslarni bir joyda boshqaring."
@@ -325,21 +372,17 @@ export function DashboardScreen() {
 
   const firstName = data.profile.firstName?.trim() || "Marketer";
   return (
-    <div className="space-y-4">
-      <PageTitle
+    <div className="space-y-3">
+      <ScreenHeading
         eyebrow="Bugungi holat"
         title={`Salom, ${firstName}`}
         description="Havolalaringiz natijasi va olinadigan bonuslar."
-        action={
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
-            <Sparkles className="h-5 w-5" />
-          </span>
-        }
+        accent
       />
 
       {!data.program.enabled && (
-        <Panel className="border-[var(--warning-line)] bg-[var(--warning-soft)] p-3.5">
-          <p className="text-sm font-black text-[var(--ink)]">
+        <Panel className="rounded-2xl border-[var(--warning-line)] bg-[var(--warning-soft)] p-3">
+          <p className="text-[13px] font-black text-[var(--ink)]">
             Referal dasturi vaqtincha to&apos;xtatilgan
           </p>
           <p className="mt-1 text-xs font-semibold leading-5 text-[var(--muted)]">
@@ -377,22 +420,24 @@ export function DashboardScreen() {
         />
       </div>
 
-      <Panel className="p-4">
+      <Panel className="rounded-2xl p-4">
         <div className="flex items-center justify-between gap-3">
-          <SectionHeading
+          <CompactHeading
             title="Savdo dinamikasi"
             caption="Savdo va hisoblangan bonus"
           />
-          <div className="flex rounded-xl bg-[var(--surface-muted)] p-1">
+          <div className="flex shrink-0 rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] p-0.5">
             {ranges.map((item) => (
               <button
+                type="button"
                 key={item.value}
                 onClick={() => setRange(item.value)}
+                aria-pressed={range === item.value}
                 className={clsx(
-                  "h-8 rounded-lg px-2.5 text-[10px] font-extrabold transition",
+                  "h-7 rounded-md border px-2 text-[9px] font-extrabold transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]",
                   range === item.value
-                    ? "bg-[var(--surface)] text-[var(--brand)]"
-                    : "text-[var(--muted)]",
+                    ? "border-[var(--brand-line)] bg-[var(--surface)] text-[var(--brand)]"
+                    : "border-transparent text-[var(--muted)]",
                 )}
               >
                 {item.label}
@@ -403,18 +448,18 @@ export function DashboardScreen() {
         <TrendChart data={data.trend} />
         <div className="mt-1 flex items-center justify-center gap-4 text-[10px] font-bold text-[var(--muted)]">
           <span className="flex items-center gap-1.5">
-            <i className="h-2 w-2 rounded-full bg-[var(--brand)]" />
+            <i className="h-1.5 w-1.5 rounded-full bg-[var(--brand)]" />
             Savdo
           </span>
           <span className="flex items-center gap-1.5">
-            <i className="h-2 w-2 rounded-full bg-[var(--warning)]" />
+            <i className="h-1.5 w-1.5 rounded-full bg-slate-400" />
             Bonus
           </span>
         </div>
       </Panel>
 
-      <Panel className="p-4">
-        <SectionHeading
+      <Panel className="rounded-2xl p-4">
+        <CompactHeading
           title="Natijalar voronkasi"
           caption="Ko'rishdan yetkazib berishgacha"
         />
@@ -422,16 +467,16 @@ export function DashboardScreen() {
       </Panel>
 
       {data.topProducts.length > 0 && (
-        <Panel className="p-4">
-          <SectionHeading
+        <Panel className="rounded-2xl p-4">
+          <CompactHeading
             title="Yaxshi ishlayotgan mahsulotlar"
             caption="Tanlangan davr natijasi"
           />
-          <div className="mt-2 divide-y divide-[var(--line)]">
+          <div className="mt-1.5 divide-y divide-[var(--line)]">
             {data.topProducts.slice(0, 4).map((product, index) => (
               <div
                 key={product.id}
-                className="flex items-center gap-3 py-3 first:pt-1"
+                className="flex items-center gap-2.5 py-2.5 first:pt-1"
               >
                 <span className="w-5 text-center text-xs font-black text-[var(--muted)]">
                   {index + 1}
@@ -439,7 +484,7 @@ export function DashboardScreen() {
                 <ProductImage
                   src={product.thumbnailUrl}
                   alt={product.nameUz}
-                  className="h-12 w-10 shrink-0 rounded-lg"
+                  className="h-11 w-9 shrink-0 rounded-lg border border-[var(--line)] bg-[var(--surface-muted)]"
                   sizes="40px"
                 />
                 <div className="min-w-0 flex-1">
@@ -450,9 +495,9 @@ export function DashboardScreen() {
                     #{product.numericId}
                   </p>
                 </div>
-                <StatusChip tone="success">
+                <span className="inline-flex min-h-6 shrink-0 items-center rounded-full border border-[var(--success-line)] bg-[var(--success-soft)] px-2 text-[10px] font-extrabold text-[var(--success)]">
                   +{formatMoney(product.expectedBonus)}
-                </StatusChip>
+                </span>
               </div>
             ))}
           </div>
@@ -460,13 +505,21 @@ export function DashboardScreen() {
       )}
 
       {!data.recentActivity.length && !data.topProducts.length ? (
-        <EmptyState
-          title="Birinchi referalingizni yarating"
-          description="Bozor bo'limidan mahsulot tanlab, auditoriyangiz bilan ulashing."
-        />
+        <Panel className="rounded-2xl px-5 py-7 text-center">
+          <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+            <ShoppingBag className="h-4.5 w-4.5" />
+          </span>
+          <h2 className="mt-3 text-[15px] font-extrabold text-[var(--ink)]">
+            Birinchi referalingizni yarating
+          </h2>
+          <p className="mx-auto mt-1 max-w-sm text-xs font-medium leading-5 text-[var(--muted)]">
+            Bozor bo&apos;limidan mahsulot tanlab, auditoriyangiz bilan
+            ulashing.
+          </p>
+        </Panel>
       ) : (
-        <Panel className="p-4">
-          <SectionHeading title="So'nggi faollik" />
+        <Panel className="rounded-2xl p-4">
+          <CompactHeading title="So'nggi faollik" />
           <ActivityList items={data.recentActivity} />
         </Panel>
       )}

@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
+  ChartNoAxesCombined,
   Bot,
+  CircleUserRound,
   ExternalLink,
-  LayoutGrid,
-  Megaphone,
-  UserRound,
+  Link2,
+  Store,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { clsx } from "clsx";
@@ -18,10 +18,10 @@ import { useTelegramBackButton } from "@/src/telegram/useTelegramBackButton";
 import { Button, PageSkeleton, Panel } from "./ui/primitives";
 
 const navItems = [
-  { href: "/", label: "Bosh sahifa", icon: BarChart3 },
-  { href: "/market", label: "Bozor", icon: LayoutGrid },
-  { href: "/referrals", label: "Referallar", icon: Megaphone },
-  { href: "/account", label: "Hisob", icon: UserRound },
+  { href: "/", label: "Dashboard", icon: ChartNoAxesCombined },
+  { href: "/market", label: "Market", icon: Store },
+  { href: "/referrals", label: "Referallar", icon: Link2 },
+  { href: "/account", label: "Hisob", icon: CircleUserRound },
 ];
 
 function AuthFailure({ message }: { message: string }) {
@@ -32,12 +32,12 @@ function AuthFailure({ message }: { message: string }) {
   const botUrl = botUsername ? `https://t.me/${botUsername}` : "";
 
   return (
-    <div className="flex min-h-[calc(100dvh-var(--app-safe-top)-var(--app-safe-bottom))] items-center px-3 py-8">
-      <Panel className="w-full px-5 py-7 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-[18px] border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+    <div className="flex min-h-[calc(100dvh-var(--app-safe-top)-var(--app-safe-bottom))] items-center py-8">
+      <Panel className="w-full px-5 py-8 text-center">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
           <Bot className="h-6 w-6" />
         </span>
-        <h1 className="mt-4 text-xl font-black tracking-[-0.02em] text-[var(--ink)]">
+        <h1 className="mt-4 text-xl font-extrabold tracking-[-0.025em] text-[var(--ink)]">
           Ilovani bot orqali oching
         </h1>
         <p className="mt-2 text-sm font-medium leading-6 text-[var(--muted)]">
@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (status === "booting") {
     return (
-      <main className="app-shell mx-auto min-h-[100dvh] max-w-[540px] px-3 pb-[calc(86px+var(--app-safe-bottom))] pt-[calc(12px+var(--app-safe-top))]">
+      <main className="app-shell mx-auto min-h-[100dvh] max-w-[560px] pb-[calc(88px+var(--app-safe-bottom))] pt-[calc(10px+var(--app-safe-top))]">
         <PageSkeleton />
       </main>
     );
@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (status === "error") {
     return (
-      <main className="app-shell mx-auto min-h-[100dvh] max-w-[540px] pt-[var(--app-safe-top)]">
+      <main className="app-shell mx-auto min-h-[100dvh] max-w-[560px] pt-[var(--app-safe-top)]">
         <AuthFailure
           message={
             sessionError ??
@@ -89,20 +89,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <main className="app-shell mx-auto min-h-[100dvh] max-w-[540px] px-3 pb-[calc(86px+var(--app-safe-bottom))] pt-[calc(12px+var(--app-safe-top))]">
+    <main className="app-shell mx-auto min-h-[100dvh] max-w-[560px] pb-[calc(88px+var(--app-safe-bottom))] pt-[calc(10px+var(--app-safe-top))]">
       {status === "preview" && (
-        <div className="mb-3 flex items-center gap-2 rounded-xl border border-[var(--warning-line)] bg-[var(--warning-soft)] px-3 py-2 text-xs font-bold text-[var(--warning)]">
-          <span className="h-2 w-2 shrink-0 rounded-full bg-current" />
+        <div className="mb-3 flex items-center gap-2 rounded-[14px] border border-[var(--warning-line)] bg-[var(--warning-soft)] px-3 py-2 text-[11px] font-bold text-[var(--warning)]">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
           Brauzer ko’rish rejimi — kirish Telegram ichida tasdiqlanadi
         </div>
       )}
       <div className="min-w-0">{children}</div>
 
       <nav
-        className="bottom-nav-frame fixed bottom-0 z-50 border-t border-[var(--line)] bg-[color:var(--surface-glass)] px-2 pt-1.5 backdrop-blur-xl"
+        className="bottom-nav-frame fixed bottom-0 z-50 rounded-t-[22px] border-x border-t border-[var(--line)] bg-[color:var(--surface-glass)] px-2 pt-1 backdrop-blur-xl"
         aria-label="Asosiy bo'limlar"
       >
-        <div className="grid grid-cols-4 gap-1 pb-[calc(7px+var(--app-safe-bottom))]">
+        <div className="grid grid-cols-4 gap-1 pb-[calc(6px+var(--app-safe-bottom))]">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active =
@@ -113,17 +113,25 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={clsx(
-                  "flex h-[58px] flex-col items-center justify-center gap-1 rounded-[14px] text-[10px] font-extrabold transition active:scale-[0.98]",
+                  "flex h-[62px] flex-col items-center justify-center gap-0.5 rounded-[15px] text-[10px] font-bold transition active:scale-[0.98]",
                   active
-                    ? "bg-[var(--brand-soft)] text-[var(--brand)]"
+                    ? "text-[var(--brand)]"
                     : "text-[var(--muted)] active:bg-[var(--surface-muted)]",
                 )}
               >
-                <Icon
-                  className={clsx("h-5 w-5", active && "stroke-[2.4]")}
-                />
-                {item.label}
+                <span
+                  className={clsx(
+                    "flex h-8 min-w-11 items-center justify-center rounded-full px-3 transition",
+                    active && "bg-[var(--brand-soft)]",
+                  )}
+                >
+                  <Icon
+                    className={clsx("h-[19px] w-[19px]", active && "stroke-[2.4]")}
+                  />
+                </span>
+                <span>{item.label}</span>
               </Link>
             );
           })}

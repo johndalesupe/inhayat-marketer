@@ -104,23 +104,23 @@ function ConnectBotForm() {
     defaultValues: { token: "", label: "" },
   });
   return (
-    <Panel className="p-4">
-      <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand)]">
-          <Bot className="h-5 w-5" />
+    <Panel className="overflow-hidden">
+      <div className="flex items-start gap-3 border-b border-[var(--line)] bg-[var(--surface-raised)] p-4">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--surface)] text-[var(--brand)]">
+          <Bot className="h-[18px] w-[18px]" />
         </span>
-        <div>
-          <h2 className="text-base font-black text-[var(--ink)]">
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-black tracking-[-0.01em] text-[var(--ink)]">
             Shaxsiy botni ulang
           </h2>
-          <p className="mt-1 text-xs font-medium leading-5 text-[var(--muted)]">
+          <p className="mt-1 text-[11px] font-medium leading-[18px] text-[var(--muted)]">
             @BotFather tokeni serverda shifrlanadi. Token qayta ko’rsatilmaydi
             va har bir marketer faqat bitta bot ulashi mumkin.
           </p>
         </div>
       </div>
       <form
-        className="mt-4 space-y-3"
+        className="space-y-3.5 p-4"
         onSubmit={form.handleSubmit((values) =>
           mutation.mutate(
             {
@@ -138,7 +138,7 @@ function ConnectBotForm() {
         )}
       >
         <label className="block">
-          <span className="mb-1.5 block text-xs font-extrabold text-[var(--ink)]">
+          <span className="mb-1.5 block text-[11px] font-extrabold text-[var(--ink)]">
             Bot tokeni
           </span>
           <input
@@ -152,8 +152,11 @@ function ConnectBotForm() {
           <FieldError message={form.formState.errors.token?.message} />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-extrabold text-[var(--ink)]">
-            Ichki nom <span className="text-[var(--muted)]">(ixtiyoriy)</span>
+          <span className="mb-1.5 block text-[11px] font-extrabold text-[var(--ink)]">
+            Ichki nom{" "}
+            <span className="font-semibold text-[var(--muted-light)]">
+              (ixtiyoriy)
+            </span>
           </span>
           <input
             {...form.register("label")}
@@ -170,7 +173,7 @@ function ConnectBotForm() {
         )}
         <Button
           type="submit"
-          className="w-full"
+          className="w-full text-[13px]"
           loading={mutation.isPending}
         >
           <KeyRound className="h-4 w-4" />
@@ -203,23 +206,23 @@ function BotOverview({
     <Panel className="overflow-hidden">
       <div className="border-b border-[var(--line)] p-4">
         <div className="flex items-start gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand)]">
-            <Bot className="h-5 w-5" />
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+            <Bot className="h-[19px] w-[19px]" />
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="truncate text-base font-black text-[var(--ink)]">
+                <p className="truncate text-[15px] font-black tracking-[-0.01em] text-[var(--ink)]">
                   {bot.displayName}
                 </p>
-                <p className="mt-0.5 truncate text-xs font-bold text-[var(--muted)]">
+                <p className="mt-0.5 truncate text-[11px] font-bold text-[var(--brand)]">
                   @{bot.username}
                 </p>
               </div>
               <StatusChip tone={status.tone}>{status.label}</StatusChip>
             </div>
             {bot.label && (
-              <p className="mt-2 truncate text-[11px] font-semibold text-[var(--muted)]">
+              <p className="mt-2 inline-flex max-w-full truncate rounded-full border border-[var(--line)] bg-[var(--surface-raised)] px-2 py-1 text-[10px] font-semibold text-[var(--muted)]">
                 {bot.label}
               </p>
             )}
@@ -241,7 +244,7 @@ function BotOverview({
             </div>
             <Button
               variant="secondary"
-              className="mt-3 min-h-10 w-full"
+              className="mt-3 min-h-10 w-full px-3 text-xs"
               loading={action.isPending}
               onClick={() => runAction("retry")}
             >
@@ -252,33 +255,34 @@ function BotOverview({
         )}
       </div>
 
-      <div className="grid grid-cols-2 divide-x divide-[var(--line)] border-b border-[var(--line)]">
-        <div className="p-3">
+      <div className="grid grid-cols-2 divide-x divide-[var(--line)] border-b border-[var(--line)] bg-[var(--surface-raised)]">
+        <div className="px-4 py-3">
           <p className="text-[10px] font-bold text-[var(--muted)]">
             Ulangan chatlar
           </p>
-          <p className="mt-1 text-lg font-black text-[var(--ink)]">
+          <p className="mt-0.5 text-lg font-black tabular-nums tracking-[-0.02em] text-[var(--ink)]">
             {bot.connectedChatsCount}
           </p>
         </div>
-        <div className="p-3">
+        <div className="px-4 py-3">
           <p className="text-[10px] font-bold text-[var(--muted)]">
             Post yuborish mumkin
           </p>
-          <p className="mt-1 text-lg font-black text-[var(--brand)]">
+          <p className="mt-0.5 text-lg font-black tabular-nums tracking-[-0.02em] text-[var(--brand)]">
             {bot.publishableChatsCount}
           </p>
         </div>
       </div>
 
       <div className="p-3">
-        <p className="mb-2 text-[10px] font-semibold text-[var(--muted)]">
+        <p className="mb-2.5 px-0.5 text-[10px] font-semibold text-[var(--muted)]">
           Oxirgi aloqa: {formatDateTime(bot.lastHeartbeatAt)}
         </p>
         <div className="grid grid-cols-2 gap-2">
           {bot.isRunning ? (
             <Button
               variant="secondary"
+              className="min-h-10 px-2 text-xs"
               loading={action.isPending && action.variables === "stop"}
               onClick={() => runAction("stop")}
             >
@@ -287,6 +291,7 @@ function BotOverview({
             </Button>
           ) : (
             <Button
+              className="min-h-10 px-2 text-xs"
               loading={action.isPending && action.variables === "start"}
               onClick={() => runAction("start")}
             >
@@ -296,17 +301,26 @@ function BotOverview({
           )}
           <Button
             variant="secondary"
+            className="min-h-10 px-2 text-xs"
             loading={action.isPending && action.variables === "restart"}
             onClick={() => runAction("restart")}
           >
             <RefreshCcw className="h-4 w-4" />
             Qayta boshlash
           </Button>
-          <Button variant="secondary" onClick={onEdit}>
+          <Button
+            variant="secondary"
+            className="min-h-10 px-2 text-xs"
+            onClick={onEdit}
+          >
             <Pencil className="h-4 w-4" />
             Sozlash
           </Button>
-          <Button variant="danger" onClick={onRemove}>
+          <Button
+            variant="danger"
+            className="min-h-10 px-2 text-xs"
+            onClick={onRemove}
+          >
             <Trash2 className="h-4 w-4" />
             Olib tashlash
           </Button>
@@ -341,7 +355,7 @@ function ChatsPanel({ bot }: { bot: MarketerBot }) {
           <button
             onClick={() => void query.refetch()}
             disabled={query.isFetching}
-            className="flex h-8 items-center gap-1 rounded-lg px-2 text-[10px] font-extrabold text-[var(--brand)] disabled:opacity-50"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[10px] font-extrabold text-[var(--brand)] transition active:bg-[var(--surface-muted)] disabled:opacity-50"
           >
             <RefreshCcw
               className={`h-3.5 w-3.5 ${query.isFetching ? "animate-spin" : ""}`}
@@ -365,8 +379,11 @@ function ChatsPanel({ bot }: { bot: MarketerBot }) {
         ) : query.data?.length ? (
           <Panel className="divide-y divide-[var(--line)] overflow-hidden">
             {query.data.map((chat) => (
-              <div key={chat.id} className="flex items-center gap-3 p-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--brand)]">
+              <div
+                key={chat.id}
+                className="flex items-center gap-3 p-3 transition active:bg-[var(--surface-raised)]"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] text-[var(--brand)]">
                   {chat.type === "channel" ? (
                     <Megaphone className="h-4 w-4" />
                   ) : (
@@ -445,7 +462,7 @@ function UpdateBotSheet({
       description="Tokenni bo'sh qoldirsangiz mavjud shifrlangan token saqlanadi."
     >
       <form
-        className="space-y-3"
+        className="space-y-3.5"
         onSubmit={form.handleSubmit((values) =>
           mutation.mutate(
             {
@@ -464,15 +481,18 @@ function UpdateBotSheet({
         )}
       >
         <label className="block">
-          <span className="mb-1.5 block text-xs font-extrabold text-[var(--ink)]">
+          <span className="mb-1.5 block text-[11px] font-extrabold text-[var(--ink)]">
             Ichki nom
           </span>
           <input {...form.register("label")} className={inputClass} />
           <FieldError message={form.formState.errors.label?.message} />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-extrabold text-[var(--ink)]">
-            Yangi token <span className="text-[var(--muted)]">(ixtiyoriy)</span>
+          <span className="mb-1.5 block text-[11px] font-extrabold text-[var(--ink)]">
+            Yangi token{" "}
+            <span className="font-semibold text-[var(--muted-light)]">
+              (ixtiyoriy)
+            </span>
           </span>
           <input
             {...form.register("token")}
@@ -491,7 +511,7 @@ function UpdateBotSheet({
         )}
         <Button
           type="submit"
-          className="w-full"
+          className="w-full text-[13px]"
           loading={mutation.isPending}
         >
           <ShieldCheck className="h-4 w-4" />
@@ -527,7 +547,7 @@ function RemoveBotSheet({
         </p>
       )}
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <Button variant="secondary" onClick={onClose}>
+        <Button variant="secondary" className="text-[13px]" onClick={onClose}>
           Bekor qilish
         </Button>
         <Button
@@ -558,7 +578,7 @@ export function BotScreen() {
 
   if (query.isLoading) return <PageSkeleton />;
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 pb-1">
       <PageTitle
         eyebrow="Hisob · Mening botim"
         title="Mening botim"

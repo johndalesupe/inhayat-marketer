@@ -78,10 +78,10 @@ function bonusPresentation(status: MarketerOrder["bonusStatus"]) {
 function OrderCard({ order }: { order: MarketerOrder }) {
   const status = statusPresentation(order.status);
   return (
-    <Panel className="p-3.5">
-      <div className="flex items-start justify-between gap-3 border-b border-[var(--line)] pb-3">
-        <div>
-          <p className="text-sm font-black text-[var(--ink)]">
+    <Panel className="overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--line)] px-3.5 py-3">
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-black tabular-nums tracking-[-0.01em] text-[var(--ink)]">
             #{order.orderNumber}
           </p>
           <p className="mt-0.5 text-[10px] font-semibold text-[var(--muted)]">
@@ -91,24 +91,24 @@ function OrderCard({ order }: { order: MarketerOrder }) {
         <StatusChip tone={status.tone}>{status.label}</StatusChip>
       </div>
 
-      <div className="divide-y divide-[var(--line)]">
+      <div className="divide-y divide-[var(--line)] px-3.5">
         {order.items.slice(0, 3).map((item) => (
-          <div key={item.id} className="flex items-center gap-3 py-3">
+          <div key={item.id} className="flex items-center gap-2.5 py-2.5">
             <ProductImage
               src={item.thumbnailUrl}
               alt={item.nameUz}
-              className="h-14 w-11 shrink-0 rounded-lg"
-              sizes="44px"
+              className="h-[52px] w-10 shrink-0 rounded-lg"
+              sizes="40px"
             />
             <div className="min-w-0 flex-1">
-              <p className="line-clamp-2 text-xs font-extrabold leading-[17px] text-[var(--ink)]">
+              <p className="line-clamp-2 text-[11px] font-extrabold leading-4 text-[var(--ink)]">
                 {item.nameUz}
               </p>
-              <p className="mt-1 text-[10px] font-semibold text-[var(--muted)]">
+              <p className="mt-1 text-[9px] font-semibold text-[var(--muted)]">
                 #{item.numericId} · {item.quantity} dona
               </p>
             </div>
-            <span className="shrink-0 text-xs font-black text-[var(--ink)]">
+            <span className="max-w-[36%] shrink-0 text-right text-[11px] font-black tabular-nums text-[var(--ink)]">
               {formatMoney(item.lineTotal)}
             </span>
           </div>
@@ -120,24 +120,24 @@ function OrderCard({ order }: { order: MarketerOrder }) {
         )}
       </div>
 
-      <div className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl bg-[var(--surface-muted)] p-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-[var(--line)] bg-[var(--surface-raised)] px-3.5 py-3">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 truncate text-[10px] font-bold text-[var(--muted)]">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-[var(--brand)]" />
             {order.region}, {order.city}
           </p>
-          <p className="mt-1 text-[10px] font-semibold text-[var(--muted)]">
+          <p className="mt-1 truncate text-[9px] font-semibold text-[var(--muted)]">
             {order.itemCount} dona · Mahsulotlar{" "}
             {formatMoney(order.productSubtotal)}
           </p>
         </div>
-        <div className="text-right">
+        <div className="min-w-[104px] border-l border-[var(--line)] pl-3 text-right">
           <p className="text-[9px] font-bold text-[var(--muted)]">
             Sizning bonusingiz
           </p>
           <p
             className={clsx(
-              "mt-0.5 text-sm font-black",
+              "mt-0.5 text-[13px] font-black tabular-nums",
               order.bonusStatus === "reversed"
                 ? "text-[var(--danger)]"
                 : "text-[var(--brand)]",
@@ -159,19 +159,21 @@ function OrdersSkeleton() {
   return (
     <div className="space-y-2.5">
       {Array.from({ length: 3 }).map((_, index) => (
-        <Panel key={index} className="p-3.5">
-          <div className="flex justify-between">
+        <Panel key={index} className="overflow-hidden">
+          <div className="flex justify-between border-b border-[var(--line)] px-3.5 py-3">
             <Skeleton className="h-5 w-24" />
             <Skeleton className="h-6 w-20 rounded-full" />
           </div>
-          <div className="mt-3 flex gap-3 border-y border-[var(--line)] py-3">
-            <Skeleton className="h-14 w-11 shrink-0" />
+          <div className="mx-3.5 flex gap-2.5 py-2.5">
+            <Skeleton className="h-[52px] w-10 shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-3 w-1/2" />
             </div>
           </div>
-          <Skeleton className="mt-3 h-16 w-full" />
+          <div className="border-t border-[var(--line)] bg-[var(--surface-raised)] px-3.5 py-3">
+            <Skeleton className="h-11 w-full" />
+          </div>
         </Panel>
       ))}
     </div>
@@ -199,16 +201,18 @@ export function OrdersScreen() {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 pb-1">
       <PageTitle
         eyebrow="Hisob · Buyurtmalar"
         title="Buyurtmalarim"
         description="Sizning referal sessiyalaringizdan kelgan buyurtmalar."
       />
 
-      <div className="flex items-start gap-2.5 rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] p-3 text-[var(--brand)]">
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
-        <p className="text-[11px] font-semibold leading-5">
+      <div className="flex items-start gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+          <ShieldCheck className="h-4 w-4" />
+        </span>
+        <p className="pt-0.5 text-[11px] font-semibold leading-[18px] text-[var(--muted)]">
           Mijoz maxfiyligi himoyalangan: ism va telefon ko’rsatilmaydi. Faqat
           hudud, mahsulot, soni va bonus holati mavjud.
         </p>
@@ -227,10 +231,20 @@ export function OrdersScreen() {
         </label>
         <IconButton
           label="Buyurtma holati"
-          className="h-12 w-12"
+          className={clsx(
+            "relative h-12 w-12",
+            status !== "all" &&
+              "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]",
+          )}
           onClick={() => setFilterOpen(true)}
         >
           <Filter className="h-4.5 w-4.5" />
+          {status !== "all" && (
+            <span
+              aria-hidden
+              className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[var(--brand)] ring-2 ring-[var(--brand-soft)]"
+            />
+          )}
         </IconButton>
       </div>
 
@@ -282,15 +296,17 @@ export function OrdersScreen() {
           {orderFilters.map((item) => (
             <button
               key={item.value}
+              type="button"
+              aria-pressed={status === item.value}
               onClick={() => {
                 setStatus(item.value);
                 setFilterOpen(false);
               }}
               className={clsx(
-                "flex min-h-12 w-full items-center justify-between rounded-xl border px-3 text-sm font-extrabold",
+                "flex min-h-11 w-full items-center justify-between rounded-xl border px-3 text-[13px] font-extrabold transition active:bg-[var(--surface-muted)]",
                 status === item.value
                   ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
-                  : "border-[var(--line)] text-[var(--ink)]",
+                  : "border-[var(--line)] bg-[var(--surface)] text-[var(--ink)]",
               )}
             >
               <span className="flex items-center gap-2">
@@ -301,7 +317,11 @@ export function OrdersScreen() {
                 )}
                 {item.label}
               </span>
-              {status === item.value && <Check className="h-4 w-4" />}
+              {status === item.value && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--brand)] text-white">
+                  <Check className="h-3.5 w-3.5" />
+                </span>
+              )}
             </button>
           ))}
         </div>

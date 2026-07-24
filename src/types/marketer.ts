@@ -146,6 +146,31 @@ export type MarketerReferral = {
   updatedAt: string;
 };
 
+export type BulkReferralSelection =
+  | {
+      productIds: string[];
+      categoryId?: never;
+      allInCategory?: false;
+    }
+  | {
+      productIds?: never;
+      categoryId: string;
+      allInCategory: true;
+    };
+
+export type BulkReferralCreateResult = {
+  referrals: MarketerReferral[];
+  createdCount: number;
+  reusedCount: number;
+};
+
+export type BulkReferralPublishResult = {
+  queued: number;
+  targetDeliveries: number;
+  batchId: string;
+  jobIds: string[];
+};
+
 export type PublicationJobStatus =
   | "queued"
   | "running"
@@ -168,6 +193,27 @@ export type MarketerPublicationJob = {
   startedAt?: string | null;
   completedAt?: string | null;
   createdAt: string;
+};
+
+export type MarketerPublicationBatch = {
+  batchId: string;
+  status: PublicationJobStatus | "partial";
+  totalJobs: number;
+  completedJobs: number;
+  failedJobs: number;
+  totalDeliveries: number;
+  sentCount: number;
+  failedCount: number;
+  jobs: Array<{
+    jobId: string;
+    status: PublicationJobStatus;
+    totalCount: number;
+    sentCount: number;
+    failedCount: number;
+    error?: string | null;
+  }>;
+  createdAt: string;
+  completedAt: string | null;
 };
 
 export type BotPermissionSet = {

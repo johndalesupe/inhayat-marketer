@@ -24,7 +24,7 @@ export function Panel({
     <section
       {...props}
       className={clsx(
-        "rounded-[18px] border border-[var(--line)] bg-[var(--surface)]",
+        "rounded-2xl border border-[var(--line)] bg-[var(--surface)]",
         className,
       )}
     />
@@ -43,13 +43,13 @@ export function Button({
 }) {
   const variants = {
     primary:
-      "border-[var(--brand)] bg-[var(--brand)] text-white active:bg-[var(--brand-strong)]",
+      "border-[var(--brand)] bg-[var(--brand)] text-white hover:bg-[var(--brand-strong)] active:bg-[var(--brand-strong)]",
     secondary:
-      "border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)] active:bg-[var(--surface-muted)]",
+      "border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)] hover:border-[var(--brand-line)] hover:bg-[var(--brand-soft)] active:bg-[var(--surface-muted)]",
     danger:
-      "border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger)] active:bg-[var(--danger-line)]",
+      "border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger)] hover:border-[var(--danger)] active:bg-[var(--danger-line)]",
     ghost:
-      "border-transparent bg-transparent text-[var(--muted)] active:bg-[var(--surface-muted)]",
+      "border-transparent bg-transparent text-[var(--muted)] hover:bg-[var(--surface-muted)] active:bg-[var(--surface-muted)]",
   };
 
   return (
@@ -57,7 +57,7 @@ export function Button({
       {...props}
       disabled={props.disabled || loading}
       className={clsx(
-        "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-bold transition active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[13px] border px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],
         className,
       )}
@@ -82,7 +82,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={clsx(
-        "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] transition active:scale-95 active:bg-[var(--surface-muted)] disabled:opacity-50",
+        "inline-flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[13px] border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] transition hover:border-[var(--line-strong)] hover:bg-[var(--surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-95 disabled:opacity-50",
         className,
       )}
     >
@@ -106,15 +106,16 @@ export function PageTitle({
     <header className="flex items-start justify-between gap-3 px-0.5">
       <div className="min-w-0">
         {eyebrow && (
-          <p className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[var(--brand)]">
-            {eyebrow}
+          <p className="mb-1.5 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[var(--brand)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand)]" />
+            <span>{eyebrow}</span>
           </p>
         )}
-        <h1 className="text-[24px] font-black leading-tight tracking-[-0.025em] text-[var(--ink)]">
+        <h1 className="text-[23px] font-black leading-tight tracking-[-0.035em] text-[var(--ink)]">
           {title}
         </h1>
         {description && (
-          <p className="mt-1 max-w-md text-sm font-medium leading-5 text-[var(--muted)]">
+          <p className="mt-1 max-w-md text-[13px] font-medium leading-5 text-[var(--muted)]">
             {description}
           </p>
         )}
@@ -136,11 +137,11 @@ export function SectionHeading({
   return (
     <div className="flex items-end justify-between gap-3">
       <div>
-        <h2 className="text-[16px] font-extrabold tracking-[-0.01em] text-[var(--ink)]">
+        <h2 className="text-[15px] font-extrabold tracking-[-0.015em] text-[var(--ink)]">
           {title}
         </h2>
         {caption && (
-          <p className="mt-0.5 text-xs font-medium text-[var(--muted)]">
+          <p className="mt-0.5 text-[11px] font-medium text-[var(--muted)]">
             {caption}
           </p>
         )}
@@ -171,7 +172,7 @@ export function StatusChip({
   return (
     <span
       className={clsx(
-        "inline-flex min-h-6 items-center rounded-full border px-2.5 text-[11px] font-extrabold",
+        "inline-flex min-h-6 items-center rounded-full border px-2.5 text-[10px] font-extrabold",
         tones[tone],
       )}
     >
@@ -193,19 +194,19 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function PageSkeleton() {
   return (
-    <div className="space-y-4 py-1">
+    <div className="space-y-3.5 py-1">
       <div className="space-y-2">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-8 w-52" />
         <Skeleton className="h-4 w-72 max-w-full" />
       </div>
-      <Skeleton className="h-36 w-full rounded-[18px]" />
+      <Skeleton className="h-36 w-full rounded-2xl" />
       <div className="grid grid-cols-2 gap-2.5">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} className="h-24 rounded-[18px]" />
+          <Skeleton key={index} className="h-24 rounded-2xl" />
         ))}
       </div>
-      <Skeleton className="h-52 w-full rounded-[18px]" />
+      <Skeleton className="h-52 w-full rounded-2xl" />
     </div>
   );
 }
@@ -222,11 +223,11 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <Panel className="px-5 py-9 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+    <Panel className="px-5 py-8 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[15px] border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
         <Icon className="h-5 w-5" />
       </div>
-      <h3 className="mt-3 text-base font-extrabold text-[var(--ink)]">
+      <h3 className="mt-3 text-base font-extrabold tracking-[-0.015em] text-[var(--ink)]">
         {title}
       </h3>
       <p className="mx-auto mt-1.5 max-w-sm text-sm font-medium leading-5 text-[var(--muted)]">
@@ -298,7 +299,7 @@ export function BottomSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/35"
+      className="fixed inset-0 z-[90] flex items-end justify-center bg-[#101828]/35 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -306,11 +307,11 @@ export function BottomSheet({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <section className="sheet-enter max-h-[calc(100dvh-var(--app-safe-top)-8px)] w-full max-w-[540px] overflow-y-auto rounded-t-[24px] border-x border-t border-[var(--line)] bg-[var(--surface)] px-4 pb-[calc(18px+var(--app-safe-bottom))] pt-2">
+      <section className="sheet-enter max-h-[calc(100dvh-var(--app-safe-top)-8px)] w-full max-w-[560px] overflow-y-auto rounded-t-[26px] border-x border-t border-[var(--line)] bg-[var(--surface)] px-4 pb-[calc(18px+var(--app-safe-bottom))] pt-2">
         <div className="mx-auto h-1 w-11 rounded-full bg-[var(--line-strong)]" />
         <header className="mt-3 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-black tracking-[-0.015em] text-[var(--ink)]">
+            <h2 className="text-lg font-extrabold tracking-[-0.02em] text-[var(--ink)]">
               {title}
             </h2>
             {description && (
@@ -339,5 +340,4 @@ export function FieldError({ message }: { message?: string }) {
 }
 
 export const inputClass =
-  "h-12 w-full rounded-xl border border-[var(--line-strong)] bg-[var(--surface)] px-3 text-base font-semibold text-[var(--ink)] outline-none transition placeholder:text-[var(--muted-light)] focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand-ring)]";
-
+  "h-[46px] w-full rounded-[13px] border border-[var(--line-strong)] bg-[var(--surface)] px-3 text-base font-semibold text-[var(--ink)] outline-none transition placeholder:font-medium placeholder:text-[var(--muted-light)] focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand-ring)]";

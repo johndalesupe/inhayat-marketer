@@ -68,19 +68,23 @@ function statusLabel(status: ReferralStatus) {
 
 function ReferralSkeleton() {
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2">
       {Array.from({ length: 3 }).map((_, index) => (
-        <Panel key={index} className="p-3.5">
-          <div className="flex gap-3">
-            <Skeleton className="h-16 w-12 shrink-0" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-1/2" />
+        <Panel key={index} className="overflow-hidden p-0">
+          <div className="p-3">
+            <div className="flex gap-3">
+              <Skeleton className="h-16 w-12 shrink-0 rounded-[10px]" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
             </div>
           </div>
-          <Skeleton className="mt-3 h-16 w-full" />
-          <Skeleton className="mt-3 h-10 w-full" />
+          <Skeleton className="h-14 w-full rounded-none border-y border-[var(--line)]" />
+          <div className="p-2.5">
+            <Skeleton className="h-10 w-full rounded-[10px]" />
+          </div>
         </Panel>
       ))}
     </div>
@@ -119,49 +123,51 @@ function ReferralCard({
   const { haptic } = useTelegram();
   const toggleStatus = referral.status === "active" ? "paused" : "active";
   return (
-    <Panel className="p-3.5">
-      <div className="flex items-start gap-3">
-        <ProductImage
-          src={referral.product.thumbnailUrl}
-          alt={referral.product.nameUz}
-          className="h-[68px] w-[52px] shrink-0 rounded-xl"
-          sizes="52px"
-        />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-black text-[var(--ink)]">
-                {referral.name}
-              </p>
-              <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold text-[var(--muted)]">
-                {referral.product.nameUz}
-              </p>
+    <Panel className="overflow-hidden p-0">
+      <div className="p-3">
+        <div className="flex items-start gap-3">
+          <ProductImage
+            src={referral.product.thumbnailUrl}
+            alt={referral.product.nameUz}
+            className="h-16 w-12 shrink-0 rounded-[10px] border border-[var(--line)]"
+            sizes="48px"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="truncate text-[13px] font-extrabold text-[var(--ink)]">
+                  {referral.name}
+                </p>
+                <p className="mt-0.5 line-clamp-1 text-[11px] font-medium text-[var(--muted)]">
+                  {referral.product.nameUz}
+                </p>
+              </div>
+              <StatusChip
+                tone={
+                  referral.status === "active"
+                    ? "success"
+                    : referral.status === "paused"
+                      ? "warning"
+                      : "neutral"
+                }
+              >
+                {statusLabel(referral.status)}
+              </StatusChip>
             </div>
-            <StatusChip
-              tone={
-                referral.status === "active"
-                  ? "success"
-                  : referral.status === "paused"
-                    ? "warning"
-                    : "neutral"
-              }
-            >
-              {statusLabel(referral.status)}
-            </StatusChip>
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-[10px] font-bold text-[var(--muted)]">
-            <span>#{referral.product.numericId}</span>
-            <span>•</span>
-            <span>{formatDate(referral.createdAt)}</span>
-            <span>•</span>
-            <span className="text-[var(--brand)]">
-              +{formatMoney(referral.expectedBonus)}
-            </span>
+            <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] font-semibold text-[var(--muted)]">
+              <span>#{referral.product.numericId}</span>
+              <span aria-hidden="true">•</span>
+              <span>{formatDate(referral.createdAt)}</span>
+              <span aria-hidden="true">•</span>
+              <span className="font-extrabold text-[var(--brand)]">
+                +{formatMoney(referral.expectedBonus)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-4 divide-x divide-[var(--line)] rounded-xl bg-[var(--surface-muted)] py-2.5">
+      <div className="grid grid-cols-4 divide-x divide-[var(--line)] border-y border-[var(--line)] bg-[var(--surface-muted)] py-2">
         {[
           {
             label: "Ko'rish",
@@ -188,10 +194,10 @@ function ReferralCard({
           return (
             <div key={metric.label} className="min-w-0 px-1 text-center">
               <Icon className="mx-auto h-3.5 w-3.5 text-[var(--brand)]" />
-              <p className="mt-1 truncate text-xs font-black text-[var(--ink)]">
+              <p className="mt-0.5 truncate text-xs font-extrabold text-[var(--ink)]">
                 {formatCompact(metric.value)}
               </p>
-              <p className="mt-0.5 truncate text-[8px] font-bold text-[var(--muted)]">
+              <p className="mt-0.5 truncate text-[9px] font-medium text-[var(--muted)]">
                 {metric.label}
               </p>
             </div>
@@ -199,76 +205,86 @@ function ReferralCard({
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-[var(--line)] px-3 py-2.5">
-        <div>
-          <p className="text-[10px] font-bold text-[var(--muted)]">
+      <div className="grid grid-cols-2 divide-x divide-[var(--line)] border-b border-[var(--line)] bg-[var(--surface)]">
+        <div className="px-3 py-2.5">
+          <p className="text-[10px] font-semibold text-[var(--muted)]">
             Konversiya
           </p>
-          <p className="text-xs font-black text-[var(--ink)]">
+          <p className="mt-0.5 text-xs font-extrabold text-[var(--ink)]">
             {formatPercent(referral.stats.conversionPercent)}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-[10px] font-bold text-[var(--muted)]">
+        <div className="px-3 py-2.5 text-right">
+          <p className="text-[10px] font-semibold text-[var(--muted)]">
             Topilgan bonus
           </p>
-          <p className="text-xs font-black text-[var(--brand)]">
+          <p className="mt-0.5 text-xs font-extrabold text-[var(--brand)]">
             {formatMoney(referral.stats.bonus)}
           </p>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-2">
-        <Button variant="secondary" className="min-h-10 px-2" onClick={onCopy}>
-          {copied ? (
-            <Check className="h-4 w-4 text-[var(--success)]" />
-          ) : (
-            <Clipboard className="h-4 w-4" />
-          )}
-          {copied ? "Nusxalandi" : "Nusxalash"}
-        </Button>
-        <Button
-          className="min-h-10 px-2"
-          onClick={onPublish}
-          disabled={referral.status !== "active"}
-          title={
-            referral.status === "active"
-              ? "Kanal va guruhlarga yuborish"
-              : "Yuborish uchun referal faol bo'lishi kerak"
-          }
-        >
-          <Megaphone className="h-4 w-4" />
-          {referral.status === "active" ? "Kanallarga" : "Faol emas"}
-        </Button>
-        <IconButton label="Telegram orqali ulashish" onClick={onShare}>
-          <Send className="h-4 w-4" />
-        </IconButton>
-      </div>
+      <div className="p-2.5">
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+          <Button
+            variant="secondary"
+            className="min-h-10 rounded-[10px] px-2 text-xs"
+            onClick={onCopy}
+          >
+            {copied ? (
+              <Check className="h-4 w-4 text-[var(--success)]" />
+            ) : (
+              <Clipboard className="h-4 w-4" />
+            )}
+            {copied ? "Nusxalandi" : "Nusxalash"}
+          </Button>
+          <Button
+            className="min-h-10 rounded-[10px] px-2 text-xs"
+            onClick={onPublish}
+            disabled={referral.status !== "active"}
+            title={
+              referral.status === "active"
+                ? "Kanal va guruhlarga yuborish"
+                : "Yuborish uchun referal faol bo'lishi kerak"
+            }
+          >
+            <Megaphone className="h-4 w-4" />
+            {referral.status === "active" ? "Kanallarga" : "Faol emas"}
+          </Button>
+          <IconButton
+            label="Telegram orqali ulashish"
+            className="h-10 w-10 rounded-[10px]"
+            onClick={onShare}
+          >
+            <Send className="h-4 w-4" />
+          </IconButton>
+        </div>
 
-      {referral.status !== "archived" && (
-        <button
-          onClick={() =>
-            update.mutate(
-              { referralId: referral.id, status: toggleStatus },
-              {
-                onSuccess: () => haptic("success"),
-                onError: () => haptic("error"),
-              },
-            )
-          }
-          disabled={update.isPending}
-          className="mt-2 flex h-9 w-full items-center justify-center gap-1.5 rounded-lg text-[11px] font-extrabold text-[var(--muted)] active:bg-[var(--surface-muted)] disabled:opacity-50"
-        >
-          {referral.status === "active" ? (
-            <Pause className="h-3.5 w-3.5" />
-          ) : (
-            <Play className="h-3.5 w-3.5" />
-          )}
-          {referral.status === "active"
-            ? "Referalni vaqtincha to'xtatish"
-            : "Referalni qayta faollashtirish"}
-        </button>
-      )}
+        {referral.status !== "archived" && (
+          <button
+            onClick={() =>
+              update.mutate(
+                { referralId: referral.id, status: toggleStatus },
+                {
+                  onSuccess: () => haptic("success"),
+                  onError: () => haptic("error"),
+                },
+              )
+            }
+            disabled={update.isPending}
+            className="mt-1.5 flex h-8 w-full items-center justify-center gap-1.5 rounded-lg text-[10px] font-bold text-[var(--muted)] active:bg-[var(--surface-muted)] disabled:opacity-50"
+          >
+            {referral.status === "active" ? (
+              <Pause className="h-3.5 w-3.5" />
+            ) : (
+              <Play className="h-3.5 w-3.5" />
+            )}
+            {referral.status === "active"
+              ? "Referalni vaqtincha to'xtatish"
+              : "Referalni qayta faollashtirish"}
+          </button>
+        )}
+      </div>
     </Panel>
   );
 }
@@ -296,13 +312,13 @@ function PublishSheet({
       description="Bot administrator bo'lgan guruh va kanallarni tanlang."
     >
       {publish.isSuccess ? (
-        <div className="py-4 text-center">
+        <div className="py-3 text-center">
           <span
             className={clsx(
-              "mx-auto flex h-12 w-12 items-center justify-center rounded-full",
+              "mx-auto flex h-11 w-11 items-center justify-center rounded-full border",
               jobQuery.data?.status === "failed"
-                ? "bg-[var(--danger-soft)] text-[var(--danger)]"
-                : "bg-[var(--success-soft)] text-[var(--success)]",
+                ? "border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger)]"
+                : "border-[var(--success-line)] bg-[var(--success-soft)] text-[var(--success)]",
             )}
           >
             {jobQuery.data?.status === "failed" ? (
@@ -311,7 +327,7 @@ function PublishSheet({
               <CheckCircle2 className="h-6 w-6" />
             )}
           </span>
-          <h3 className="mt-3 text-base font-black text-[var(--ink)]">
+          <h3 className="mt-2.5 text-base font-extrabold text-[var(--ink)]">
             {jobQuery.data?.status === "completed"
               ? "Xabarlar yuborildi"
               : jobQuery.data?.status === "failed"
@@ -332,7 +348,7 @@ function PublishSheet({
               {jobQuery.data.error}
             </p>
           )}
-          <Button className="mt-4 w-full" onClick={onClose}>
+          <Button className="mt-3.5 min-h-10 w-full" onClick={onClose}>
             {jobQuery.data?.status === "queued" ||
             jobQuery.data?.status === "running"
               ? "Orqa fonda davom etsin"
@@ -358,7 +374,7 @@ function PublishSheet({
         />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2 rounded-xl bg-[var(--surface-muted)] p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-1">
             {[
               { value: "uz" as const, label: "O'zbekcha" },
               { value: "ru" as const, label: "Ruscha" },
@@ -366,11 +382,12 @@ function PublishSheet({
               <button
                 key={item.value}
                 onClick={() => setLanguage(item.value)}
+                aria-pressed={language === item.value}
                 className={clsx(
-                  "h-10 rounded-lg text-xs font-extrabold",
+                  "h-9 rounded-lg border text-xs font-bold",
                   language === item.value
-                    ? "bg-[var(--surface)] text-[var(--brand)]"
-                    : "text-[var(--muted)]",
+                    ? "border-[var(--line)] bg-[var(--surface)] text-[var(--brand)]"
+                    : "border-transparent text-[var(--muted)]",
                 )}
               >
                 {item.label}
@@ -390,10 +407,11 @@ function PublishSheet({
                         : [...current, chat.chatId],
                     )
                   }
+                  aria-pressed={active}
                   className={clsx(
-                    "flex w-full items-center gap-3 rounded-xl border p-3 text-left",
+                    "flex w-full items-center gap-3 rounded-[12px] border bg-[var(--surface)] p-2.5 text-left",
                     active
-                      ? "border-[var(--brand)] bg-[var(--brand-soft)]"
+                      ? "border-[var(--brand-line)] bg-[var(--brand-soft)]"
                       : "border-[var(--line)]",
                   )}
                 >
@@ -426,7 +444,7 @@ function PublishSheet({
             </p>
           )}
           <Button
-            className="mt-4 w-full"
+            className="mt-3.5 min-h-10 w-full"
             disabled={!selected.length}
             loading={publish.isPending}
             onClick={() => {
@@ -495,6 +513,7 @@ export function ReferralsScreen() {
             className={clsx(inputClass, "pl-9")}
             placeholder="Referal yoki mahsulot nomi"
             enterKeyHint="search"
+            aria-label="Referal qidirish"
           />
         </label>
         <IconButton
@@ -506,15 +525,16 @@ export function ReferralsScreen() {
         </IconButton>
       </div>
 
-      <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none]">
+      <div className="-mx-3 flex gap-1.5 overflow-x-auto px-3 pb-1 [scrollbar-width:none]">
         {statusFilters.map((item) => (
           <button
             key={item.value}
             onClick={() => setStatus(item.value)}
+            aria-pressed={status === item.value}
             className={clsx(
-              "h-9 shrink-0 rounded-full border px-3 text-[11px] font-extrabold",
+              "h-8 shrink-0 rounded-[10px] border px-3 text-[11px] font-bold",
               status === item.value
-                ? "border-[var(--brand)] bg-[var(--brand)] text-white"
+                ? "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]"
                 : "border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]",
             )}
           >
@@ -541,7 +561,7 @@ export function ReferralsScreen() {
               retry={() => void query.refetch()}
             />
           ) : referrals.length ? (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {referrals.map((referral) => (
                 <ReferralCard
                   key={referral.id}
@@ -604,10 +624,11 @@ export function ReferralsScreen() {
                 setStatus(item.value);
                 setFilterOpen(false);
               }}
+              aria-pressed={status === item.value}
               className={clsx(
-                "flex min-h-12 w-full items-center justify-between rounded-xl border px-3 text-sm font-extrabold",
+                "flex min-h-10 w-full items-center justify-between rounded-[10px] border bg-[var(--surface)] px-3 text-sm font-bold",
                 status === item.value
-                  ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
+                  ? "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]"
                   : "border-[var(--line)] text-[var(--ink)]",
               )}
             >

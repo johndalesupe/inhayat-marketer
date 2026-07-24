@@ -49,14 +49,15 @@ Server loyihasining `.env` faylida quyidagi qiymat aynan mos bo'lishi kerak:
 ```dotenv
 MARKETER_FRONTEND_URL=https://marketing.inhayat.com
 MONGO_REPLICA_SET=rs0
-MONGO_REPLICA_SET_KEY=<openssl rand -base64 48 bilan yaratilgan doimiy kalit>
+MONGO_REPLICA_SET_KEY=<openssl rand -base64 48 bilan yaratilgan doimiy maxfiy kalit>
 ```
 
-Server Compose konfiguratsiyasi marketer hamyon operatsiyalari atomik bo'lishi
-uchun mavjud `mongo_data` volume ustida bir tugunli replica setni ishga
-tushiradi. Bu sozlama mavjud MongoDB ma'lumotlarini o'chirmaydi. Keyinchalik
-sharded yoki boshqariladigan replica setga o'tilganda server `.env` faylidagi
-`MONGO_DOCKER_URI` bilan tashqi ulanishni berish mumkin.
+Server Compose konfiguratsiyasi maxfiy qiymatni MongoDB qabul qiladigan Base64
+keyfile formatiga xavfsiz aylantiradi va marketer hamyon operatsiyalari atomik
+bo'lishi uchun mavjud `mongo_data` volume ustida bir tugunli replica setni
+ishga tushiradi. Bu sozlama mavjud MongoDB ma'lumotlarini o'chirmaydi.
+Keyinchalik sharded yoki boshqariladigan replica setga o'tilganda server `.env`
+faylidagi `MONGO_DOCKER_URI` bilan tashqi ulanishni berish mumkin.
 
 Lokal Docker/Traefik kerak bo'lmagan development uchun `.env.local` ichida
 `NEXT_PUBLIC_MARKETER_API_URL=http://localhost:3012` qiymatidan foydalaning.

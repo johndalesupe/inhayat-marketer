@@ -93,7 +93,9 @@ function applyTelegramEnvironment(
   });
   root.dataset.telegram = "true";
   root.dataset.fullscreen = fullscreen ? "true" : "false";
-  root.dataset.theme = webApp.colorScheme === "dark" ? "dark" : "light";
+  // This product intentionally uses a stable light visual system. Telegram's
+  // native controls are matched to it below, regardless of the device theme.
+  root.dataset.theme = "light";
 }
 
 function clearTelegramEnvironment() {
@@ -103,6 +105,7 @@ function clearTelegramEnvironment() {
   });
   delete root.dataset.telegram;
   delete root.dataset.fullscreen;
+  delete root.dataset.theme;
 }
 
 export function TelegramProvider({ children }: { children: ReactNode }) {
@@ -157,8 +160,8 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     const themeChanged = () => syncEnvironment();
 
     try {
-      app.setHeaderColor?.("#f4f7f5");
-      app.setBackgroundColor?.("#f4f7f5");
+      app.setHeaderColor?.("#f5f7fb");
+      app.setBackgroundColor?.("#f5f7fb");
       if (supported(app, "7.10")) app.setBottomBarColor?.("#ffffff");
       app.ready();
       app.expand();

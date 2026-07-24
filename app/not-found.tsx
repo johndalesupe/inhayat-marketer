@@ -6,10 +6,10 @@ export default function NotFound() {
   return (
     <div className="flex min-h-[60dvh] items-center">
       <Panel className="w-full px-5 py-8 text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-[var(--muted)]">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-[15px] border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
           <MapPinOff className="h-5 w-5" />
         </span>
-        <h1 className="mt-3 text-lg font-black text-[var(--ink)]">
+        <h1 className="mt-3 text-lg font-extrabold tracking-[-0.02em] text-[var(--ink)]">
           Sahifa topilmadi
         </h1>
         <p className="mt-1.5 text-sm font-medium text-[var(--muted)]">
