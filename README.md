@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# INHAYAT Marketer Mini App
 
-## Getting Started
+Telegram ichida ishlaydigan marketer kabineti. Ilova Next.js App Router, TanStack
+Query, Redux Toolkit, React Hook Form va Yup asosida qurilgan.
 
-First, run the development server:
+## Ishga tushirish
+
+`.env.example` faylidan `.env.local` yarating:
+
+```dotenv
+NEXT_PUBLIC_MARKETER_API_URL=http://localhost:3012
+NEXT_PUBLIC_MARKETER_BOT_USERNAME=inhayat_marketer_bot
+NEXT_PUBLIC_MARKETER_SUPPORT_URL=https://t.me/inhayat
+```
+
+So'ng:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`NEXT_PUBLIC_MARKETER_API_URL` faqat API origin bo'lishi kerak. Ilova
+`/api/v1/marketer/*` yo'llarini o'zi qo'shadi.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Telegram ishga tushirish
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+BotFather orqali Main Mini App yoki named Mini App URL manzilini ushbu frontend
+originiga ulang. Bot yuborgan inline Web App tugmasi ham shu originni ochishi
+kerak. Frontend `Telegram.WebApp.initData` qiymatini serverga yuboradi; foydalanuvchi
+ma'lumoti faqat server imzoni va `auth_date` ni tekshirganidan so'ng qabul qilinadi.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Fullscreen Bot API 8.0 va undan yangi Telegram mijozlarida so'raladi. Eski yoki
+fullscreenni rad etgan mijozlarda ilova `expand()` rejimida ishlashda davom etadi.
