@@ -1,0 +1,238 @@
+"use client";
+
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { marketerApi } from "@/src/lib/api";
+import { marketerKeys } from "@/src/lib/query-keys";
+import { useAppSelector } from "@/src/store/hooks";
+import type {
+  DashboardRange,
+  ReferralStatus,
+} from "@/src/types/marketer";
+
+function useApiEnabled() {
+  const status = useAppSelector((state) => state.session.status);
+  return status === "authenticated" || status === "preview";
+}
+
+export function useProfile() {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.profile,
+    queryFn: marketerApi.profile,
+    enabled,
+    retry: false,
+  });
+}
+
+export function useDashboard(range: DashboardRange) {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.dashboard(range),
+    queryFn: () => marketerApi.dashboard(range),
+    enabled,
+    staleTime: 45_000,
+  });
+}
+
+export function useTopProducts() {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.topProducts,
+    queryFn: marketerApi.topProducts,
+    enabled,
+    staleTime: 2 * 60_000,
+  });
+}
+
+export function useProductCategories() {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.productCategories,
+    queryFn: marketerApi.productCategories,
+    enabled,
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useProducts(filters: {
+  search: string;
+  categoryId: string;
+  sort: string;
+  available: boolean | null;
+}) {
+  const enabled = useApiEnabled();
+  return useInfiniteQuery({
+    queryKey: marketerKeys.products(filters),
+    queryFn: ({ pageParam }) =>
+      marketerApi.products({
+        page: pageParam,
+        limit: 20,
+        search: filters.search || undefined,
+        categoryId: filters.categoryId || undefined,
+        sort: filters.sort,
+        available: filters.available ?? undefined,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNext ? lastPage.meta.page + 1 : undefined,
+    enabled,
+  });
+}
+
+export function useReferrals(filters: {
+  search: string;
+  status: ReferralStatus | "all";
+}) {
+  const enabled = useApiEnabled();
+  return useInfiniteQuery({
+    queryKey: marketerKeys.referrals(filters),
+    queryFn: ({ pageParam }) =>
+      marketerApi.referrals({
+        page: pageParam,
+        limit: 15,
+        search: filters.search || undefined,
+        status: filters.status,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNext ? lastPage.meta.page + 1 : undefined,
+    enabled,
+  });
+}
+
+export function useCreateReferral() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: marketerApi.createReferral,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: marketerKeys.referralsRoot,
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["marketer", "dashboard"],
+      });
+    },
+  });
+}
+
+export function useUpdateReferral() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      referralId,
+      status,
+    }: {
+      referralId: string;
+      status: ReferralStatus;
+    }) => marketerApi.updateReferral(referralId, { status }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: marketerKeys.referralsRoot,
+      });
+    },
+  });
+}
+
+export function usePublishReferral() {
+  return useMutation({
+    mutationFn: ({
+      referralId,
+      chatIds,
+      language,
+    }: {
+      referralId: string;
+      chatIds: string[];
+      language: "uz" | "ru";
+    }) => marketerApi.publishReferral(referralId, { chatIds, language }),
+  });
+}
+
+export function useBot() {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.bot,
+    queryFn: marketerApi.bot,
+    enabled,
+    retry: false,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "connecting" ? 3_000 : 20_000;
+    },
+  });
+}
+
+export function useBotChats(enabledByBot = true) {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.botChats,
+    queryFn: marketerApi.botChats,
+    enabled: enabled && enabledByBot,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useConnectBot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ token, label }: { token: string; label?: string }) =>
+      marketerApi.connectBot(token, label),
+    onSuccess: (bot) => {
+      queryClient.setQueryData(marketerKeys.bot, bot);
+      void queryClient.invalidateQueries({ queryKey: marketerKeys.botChats });
+    },
+  });
+}
+
+export function useUpdateBot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: marketerApi.updateBot,
+    onSuccess: (bot) => queryClient.setQueryData(marketerKeys.bot, bot),
+  });
+}
+
+export function useBotAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: marketerApi.botAction,
+    onSuccess: (bot) => {
+      queryClient.setQueryData(marketerKeys.bot, bot);
+      void queryClient.invalidateQueries({ queryKey: marketerKeys.botChats });
+    },
+  });
+}
+
+export function useRemoveBot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: marketerApi.removeBot,
+    onSuccess: () => {
+      queryClient.setQueryData(marketerKeys.bot, null);
+      queryClient.removeQueries({ queryKey: marketerKeys.botChats });
+    },
+  });
+}
+
+export function useOrders(filters: { status: string; search: string }) {
+  const enabled = useApiEnabled();
+  return useInfiniteQuery({
+    queryKey: marketerKeys.orders(filters),
+    queryFn: ({ pageParam }) =>
+      marketerApi.orders({
+        page: pageParam,
+        limit: 15,
+        status: filters.status === "all" ? undefined : filters.status,
+        search: filters.search || undefined,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNext ? lastPage.meta.page + 1 : undefined,
+    enabled,
+  });
+}

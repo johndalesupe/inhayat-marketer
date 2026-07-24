@@ -1,0 +1,475 @@
+"use client";
+
+import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  BadgeCheck,
+  Bot,
+  ChevronRight,
+  CircleHelp,
+  LockKeyhole,
+  PackageSearch,
+  Phone,
+  Send,
+  ShieldCheck,
+  UserRound,
+  WalletCards,
+} from "lucide-react";
+import Link from "next/link";
+import { Controller, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import PhoneInput from "react-phone-number-input";
+import OtpInput from "react-otp-input";
+import * as yup from "yup";
+import { marketerApi, apiErrorMessage } from "@/src/lib/api";
+import { marketerKeys } from "@/src/lib/query-keys";
+import { useProfile } from "@/src/hooks/useMarketerQueries";
+import { formatDate, formatMoney, initials } from "@/src/lib/format";
+import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
+import { setProfile } from "@/src/store/session-slice";
+import { useTelegram } from "@/src/telegram/TelegramProvider";
+import {
+  BottomSheet,
+  Button,
+  ErrorState,
+  FieldError,
+  PageSkeleton,
+  PageTitle,
+  Panel,
+  StatusChip,
+} from "@/src/components/ui/primitives";
+
+const phoneSchema = yup.object({
+  phoneNumber: yup
+    .string()
+    .required("Telefon raqamini kiriting")
+    .matches(/^\+998\d{9}$/, "O'zbekiston raqamini to'liq kiriting"),
+});
+const otpSchema = yup.object({
+  code: yup
+    .string()
+    .required("Tasdiqlash kodini kiriting")
+    .matches(/^\d{4,8}$/, "Kod 4–8 ta raqamdan iborat"),
+});
+type PhoneForm = yup.InferType<typeof phoneSchema>;
+type OtpForm = yup.InferType<typeof otpSchema>;
+
+function maskedPhone(value: string) {
+  if (value.includes("*")) return value;
+  const digits = value.replace(/\D/g, "");
+  if (digits.length < 4) return value;
+  return `+${digits.slice(0, 3)} ** *** ** ${digits.slice(-2)}`;
+}
+
+function PhoneVerificationSheet({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  const { haptic } = useTelegram();
+  const [phase, setPhase] = useState<"phone" | "otp" | "done">("phone");
+  const [submittedPhoneNumber, setSubmittedPhoneNumber] = useState("");
+  const [phoneDisplay, setPhoneDisplay] = useState("");
+  const [resendIn, setResendIn] = useState(0);
+  const phoneForm = useForm<PhoneForm>({
+    resolver: yupResolver(phoneSchema),
+    defaultValues: { phoneNumber: "+998" },
+  });
+  const otpForm = useForm<OtpForm>({
+    resolver: yupResolver(otpSchema),
+    defaultValues: { code: "" },
+  });
+  const requestOtp = useMutation({
+    mutationFn: marketerApi.requestPhoneOtp,
+    onSuccess: (response, submittedPhone) => {
+      setSubmittedPhoneNumber(submittedPhone);
+      setPhoneDisplay(maskedPhone(response.phoneNumber || submittedPhone));
+      setResendIn(response.resendAfterSeconds);
+      setPhase("otp");
+      haptic("success");
+    },
+    onError: () => haptic("error"),
+  });
+  const verifyOtp = useMutation({
+    mutationFn: ({ phone, code }: { phone: string; code: string }) =>
+      marketerApi.verifyPhoneOtp(phone, code),
+    onSuccess: (profile) => {
+      dispatch(setProfile(profile));
+      queryClient.setQueryData(marketerKeys.profile, profile);
+      setPhase("done");
+      haptic("success");
+    },
+    onError: () => haptic("error"),
+  });
+
+  useEffect(() => {
+    if (!open || resendIn <= 0) return;
+    const timer = window.setInterval(
+      () => setResendIn((value) => Math.max(0, value - 1)),
+      1_000,
+    );
+    return () => window.clearInterval(timer);
+  }, [open, resendIn]);
+
+  const close = () => {
+    setPhase("phone");
+    setSubmittedPhoneNumber("");
+    setPhoneDisplay("");
+    setResendIn(0);
+    requestOtp.reset();
+    verifyOtp.reset();
+    phoneForm.reset({ phoneNumber: "+998" });
+    otpForm.reset({ code: "" });
+    onClose();
+  };
+
+  return (
+    <BottomSheet
+      open={open}
+      onClose={close}
+      title={
+        phase === "done"
+          ? "Raqam tasdiqlandi"
+          : phase === "otp"
+            ? "SMS kodni kiriting"
+            : "Telefon raqamini tasdiqlash"
+      }
+      description={
+        phase === "phone"
+          ? "Hamyon amaliyotlari va xavfsizlik xabarlari uchun kerak."
+          : phase === "otp"
+            ? `${phoneDisplay} raqamiga yuborilgan kodni kiriting.`
+            : undefined
+      }
+    >
+      {phase === "phone" && (
+        <form
+          onSubmit={phoneForm.handleSubmit((values) =>
+            requestOtp.mutate(values.phoneNumber),
+          )}
+        >
+          <Controller
+            control={phoneForm.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <PhoneInput
+                international
+                defaultCountry="UZ"
+                countryCallingCodeEditable={false}
+                value={field.value}
+                onChange={(value) => field.onChange(value ?? "")}
+                onBlur={field.onBlur}
+                placeholder="+998 90 123 45 67"
+              />
+            )}
+          />
+          <FieldError message={phoneForm.formState.errors.phoneNumber?.message} />
+          {requestOtp.isError && (
+            <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
+              {apiErrorMessage(requestOtp.error, "SMS kod yuborilmadi")}
+            </p>
+          )}
+          <Button
+            type="submit"
+            className="mt-4 w-full"
+            loading={requestOtp.isPending}
+          >
+            <Send className="h-4 w-4" />
+            Tasdiqlash kodini olish
+          </Button>
+        </form>
+      )}
+
+      {phase === "otp" && (
+        <form
+          onSubmit={otpForm.handleSubmit((values) =>
+            verifyOtp.mutate({
+              phone: submittedPhoneNumber,
+              code: values.code,
+            }),
+          )}
+        >
+          <Controller
+            control={otpForm.control}
+            name="code"
+            render={({ field }) => (
+              <OtpInput
+                value={field.value}
+                onChange={field.onChange}
+                numInputs={6}
+                inputType="tel"
+                shouldAutoFocus
+                containerStyle="grid grid-cols-6 gap-2"
+                inputStyle={{
+                  width: "100%",
+                  height: "50px",
+                  border: "1px solid var(--line-strong)",
+                  borderRadius: "12px",
+                  background: "var(--surface)",
+                  color: "var(--ink)",
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  outline: "none",
+                }}
+                renderInput={(props) => (
+                  <input
+                    {...props}
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                    aria-label="SMS kod raqami"
+                  />
+                )}
+              />
+            )}
+          />
+          <FieldError message={otpForm.formState.errors.code?.message} />
+          {verifyOtp.isError && (
+            <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
+              {apiErrorMessage(verifyOtp.error, "Kod tasdiqlanmadi")}
+            </p>
+          )}
+          <Button
+            type="submit"
+            className="mt-4 w-full"
+            loading={verifyOtp.isPending}
+          >
+            <ShieldCheck className="h-4 w-4" />
+            Raqamni tasdiqlash
+          </Button>
+          <button
+            type="button"
+            disabled={resendIn > 0 || requestOtp.isPending}
+            onClick={() => requestOtp.mutate(submittedPhoneNumber)}
+            className="mt-2 h-10 w-full text-xs font-extrabold text-[var(--brand)] disabled:text-[var(--muted)]"
+          >
+            {resendIn > 0
+              ? `Qayta yuborish ${resendIn} soniyadan keyin`
+              : "Kodni qayta yuborish"}
+          </button>
+        </form>
+      )}
+
+      {phase === "done" && (
+        <div className="py-3 text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--success-soft)] text-[var(--success)]">
+            <BadgeCheck className="h-7 w-7" />
+          </span>
+          <p className="mt-3 text-sm font-bold text-[var(--muted)]">
+            {phoneDisplay}
+          </p>
+          <Button className="mt-5 w-full" onClick={close}>
+            Tayyor
+          </Button>
+        </div>
+      )}
+    </BottomSheet>
+  );
+}
+
+function AccountLink({
+  href,
+  icon: Icon,
+  title,
+  description,
+  badge,
+}: {
+  href: string;
+  icon: typeof Bot;
+  title: string;
+  description: string;
+  badge?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 border-b border-[var(--line)] px-3 py-3.5 last:border-0 active:bg-[var(--surface-muted)]"
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand)]">
+        <Icon className="h-4.5 w-4.5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2 text-sm font-extrabold text-[var(--ink)]">
+          {title}
+          {badge && <StatusChip tone="warning">{badge}</StatusChip>}
+        </span>
+        <span className="mt-0.5 block text-[11px] font-medium text-[var(--muted)]">
+          {description}
+        </span>
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-[var(--muted-light)]" />
+    </Link>
+  );
+}
+
+export function AccountScreen() {
+  const [phoneOpen, setPhoneOpen] = useState(false);
+  const sessionProfile = useAppSelector((state) => state.session.profile);
+  const query = useProfile();
+  const { openTelegramLink } = useTelegram();
+  const profile = query.data ?? sessionProfile;
+  const supportUrl =
+    process.env.NEXT_PUBLIC_MARKETER_SUPPORT_URL ?? "https://t.me/inhayat";
+
+  if (query.isLoading && !profile) return <PageSkeleton />;
+  if (query.isError && !profile) {
+    return (
+      <div className="space-y-4">
+        <PageTitle title="Hisob" />
+        <ErrorState
+          description={apiErrorMessage(query.error)}
+          retry={() => void query.refetch()}
+        />
+      </div>
+    );
+  }
+  if (!profile) return null;
+
+  return (
+    <div className="space-y-4">
+      <PageTitle
+        eyebrow="Shaxsiy kabinet"
+        title="Hisob"
+        description="Profil, hamyon va marketer vositalarini boshqaring."
+      />
+
+      <Panel className="p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-[var(--brand-line)] bg-[var(--brand-soft)] text-base font-black text-[var(--brand)]">
+            {profile.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profile.avatarUrl}
+                alt={profile.firstName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials(profile.firstName, profile.lastName) || (
+                <UserRound className="h-5 w-5" />
+              )
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-black text-[var(--ink)]">
+              {profile.firstName} {profile.lastName ?? ""}
+            </p>
+            <p className="mt-0.5 truncate text-xs font-semibold text-[var(--muted)]">
+              {profile.username ? `@${profile.username}` : "Telegram marketer"}
+            </p>
+            <div className="mt-1.5">
+              <StatusChip tone="brand">
+                {formatDate(profile.joinedAt)} dan beri
+              </StatusChip>
+            </div>
+          </div>
+        </div>
+      </Panel>
+
+      <Panel className="overflow-hidden border-[var(--brand-line)]">
+        <div className="bg-[var(--brand)] p-4 text-white">
+          <div className="flex items-center gap-2 text-xs font-bold text-white/75">
+            <WalletCards className="h-4 w-4" />
+            Marketer hamyoni
+          </div>
+          <p className="mt-1 text-2xl font-black tracking-[-0.035em]">
+            {formatMoney(profile.wallet.availableBalance)}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 divide-x divide-[var(--line)]">
+          <div className="p-3">
+            <p className="text-[10px] font-bold text-[var(--muted)]">
+              Kutilayotgan bonus
+            </p>
+            <p className="mt-1 text-xs font-black text-[var(--ink)]">
+              {formatMoney(profile.wallet.pendingBalance)}
+            </p>
+          </div>
+          <div className="p-3">
+            <p className="text-[10px] font-bold text-[var(--muted)]">
+              Jami yechilgan
+            </p>
+            <p className="mt-1 text-xs font-black text-[var(--ink)]">
+              {formatMoney(profile.wallet.totalPaid)}
+            </p>
+          </div>
+        </div>
+      </Panel>
+
+      {!profile.phoneVerified && (
+        <button
+          onClick={() => setPhoneOpen(true)}
+          className="flex w-full items-center gap-3 rounded-[18px] border border-[var(--warning-line)] bg-[var(--warning-soft)] p-3.5 text-left"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface)] text-[var(--warning)]">
+            <Phone className="h-4.5 w-4.5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-extrabold text-[var(--ink)]">
+              Telefon raqamini tasdiqlang
+            </span>
+            <span className="mt-0.5 block text-[11px] font-medium text-[var(--muted)]">
+              Hamyon xavfsizligi va muhim xabarlar uchun
+            </span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-[var(--warning)]" />
+        </button>
+      )}
+
+      <Panel className="overflow-hidden">
+        <AccountLink
+          href="/account/bot"
+          icon={Bot}
+          title="Mening botim"
+          description="Bot, kanal va guruh ulanishlarini boshqarish"
+        />
+        <AccountLink
+          href="/account/orders"
+          icon={PackageSearch}
+          title="Buyurtmalarim"
+          description="Referallardan kelgan maxfiylikka mos buyurtmalar"
+        />
+      </Panel>
+
+      <Panel className="overflow-hidden">
+        <button
+          onClick={() => openTelegramLink(supportUrl)}
+          className="flex w-full items-center gap-3 border-b border-[var(--line)] px-3 py-3.5 text-left active:bg-[var(--surface-muted)]"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--muted)]">
+            <CircleHelp className="h-4.5 w-4.5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-extrabold text-[var(--ink)]">
+              Yordam markazi
+            </span>
+            <span className="mt-0.5 block text-[11px] font-medium text-[var(--muted)]">
+              Operator bilan Telegram orqali bog’lanish
+            </span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-[var(--muted-light)]" />
+        </button>
+        <div className="flex items-center gap-3 px-3 py-3.5">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--muted)]">
+            <LockKeyhole className="h-4.5 w-4.5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-extrabold text-[var(--ink)]">
+              Xavfsiz sessiya
+            </p>
+            <p className="mt-0.5 text-[11px] font-medium text-[var(--muted)]">
+              Hisob faqat tasdiqlangan Telegram sessiyasida ishlaydi
+            </p>
+          </div>
+        </div>
+      </Panel>
+
+      <PhoneVerificationSheet
+        open={phoneOpen}
+        onClose={() => setPhoneOpen(false)}
+      />
+    </div>
+  );
+}
