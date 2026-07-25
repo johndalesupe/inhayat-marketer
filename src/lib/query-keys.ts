@@ -19,4 +19,7 @@ export const marketerKeys = {
   botChats: ["marketer", "bot", "chats"] as const,
   orders: (filters: { status: string; search: string }) =>
     ["marketer", "orders", filters] as const,
+  wallet: ["marketer", "wallet"] as const,
+  walletActivityRoot: ["marketer", "wallet", "activity"] as const,
+  walletActivity: ["marketer", "wallet", "activity"] as const,
 };

@@ -15,6 +15,9 @@ import type {
   MarketerProfile,
   MarketerPublicationJob,
   MarketerReferral,
+  MarketerWalletActivity,
+  MarketerWalletOverview,
+  MarketerWithdrawalRequestResult,
   OtpRequestResponse,
   PaginatedData,
   ReferralStatus,
@@ -265,5 +268,35 @@ export const marketerApi = {
     request<PaginatedData<MarketerOrder>>({
       url: "/api/v1/marketer/orders",
       params,
+    }),
+
+  wallet: () =>
+    request<MarketerWalletOverview>({
+      url: "/api/v1/marketer/wallet",
+    }),
+
+  walletActivity: (params: { page?: number; limit?: number }) =>
+    request<PaginatedData<MarketerWalletActivity>>({
+      url: "/api/v1/marketer/wallet/activity",
+      params,
+    }),
+
+  requestWithdrawal: (payload: {
+    amount: number;
+    cardNumber: string;
+    cardHolderName: string;
+    note?: string;
+    idempotencyKey: string;
+  }) =>
+    request<MarketerWithdrawalRequestResult>({
+      url: "/api/v1/marketer/withdrawals",
+      method: "POST",
+      data: {
+        amount: payload.amount,
+        cardNumber: payload.cardNumber,
+        cardHolderName: payload.cardHolderName,
+        ...(payload.note ? { note: payload.note } : {}),
+      },
+      headers: { "Idempotency-Key": payload.idempotencyKey },
     }),
 };

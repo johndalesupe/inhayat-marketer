@@ -26,6 +26,76 @@ export type WalletSummary = {
   totalPaid: number;
 };
 
+export type MarketerWithdrawalStatus =
+  | "pending"
+  | "approved"
+  | "paid"
+  | "canceled";
+
+export type MarketerWithdrawalStatusEvent = {
+  status: MarketerWithdrawalStatus;
+  note?: string | null;
+  at: string;
+  actorType: "marketer" | "admin" | "system";
+};
+
+export type MarketerWithdrawalActivity = {
+  id: string;
+  kind: "withdrawal";
+  amount: number;
+  status: MarketerWithdrawalStatus;
+  cardMasked: string;
+  cardLastFour: string;
+  cardHolderName: string;
+  currentNote?: string | null;
+  proofImageUrl?: string | null;
+  statusHistory: MarketerWithdrawalStatusEvent[];
+  requestedAt: string;
+  updatedAt: string;
+};
+
+export type WalletActivityType =
+  | "commission"
+  | "reversal"
+  | "adjustment"
+  | "withdrawal";
+
+export type MarketerWalletTransactionActivity = {
+  id: string;
+  kind: "transaction";
+  type: WalletActivityType;
+  direction: "credit" | "debit";
+  amount: number;
+  balanceAfter: number;
+  note?: string | null;
+  createdAt: string;
+};
+
+export type MarketerWalletActivity =
+  | MarketerWalletTransactionActivity
+  | MarketerWithdrawalActivity;
+
+export type MarketerWalletOverview = {
+  currency: "UZS";
+  availableBalance: number;
+  pendingBalance: number;
+  heldBalance: number;
+  totalEarned: number;
+  totalWithdrawn: number;
+  minimumWithdrawalAmount: number;
+  canWithdraw: boolean;
+  phoneVerified: boolean;
+};
+
+export type MarketerWithdrawalRequestResult = {
+  withdrawal: MarketerWithdrawalActivity;
+  reused: boolean;
+  wallet: {
+    availableBalance: number;
+    heldBalance: number;
+  };
+};
+
 export type MarketerProfile = {
   id: string;
   telegramId: string;

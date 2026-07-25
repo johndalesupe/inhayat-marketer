@@ -433,6 +433,12 @@ export function AccountScreen() {
 
       <Panel className="overflow-hidden rounded-2xl">
         <AccountLink
+          href="/account/wallet"
+          icon={WalletCards}
+          title="Hamyon"
+          description="Bonuslar, pul yechish va to'lovlar tarixi"
+        />
+        <AccountLink
           href="/account/bot"
           icon={Bot}
           title="Mening botim"

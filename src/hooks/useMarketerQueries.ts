@@ -12,6 +12,7 @@ import { useAppSelector } from "@/src/store/hooks";
 import type {
   BulkReferralSelection,
   DashboardRange,
+  MarketerWalletOverview,
   ReferralStatus,
 } from "@/src/types/marketer";
 
@@ -305,5 +306,65 @@ export function useOrders(filters: { status: string; search: string }) {
     getNextPageParam: (lastPage) =>
       lastPage.meta.hasNext ? lastPage.meta.page + 1 : undefined,
     enabled,
+  });
+}
+
+export function useWallet() {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.wallet,
+    queryFn: marketerApi.wallet,
+    enabled,
+    staleTime: 20_000,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useWalletActivity() {
+  const enabled = useApiEnabled();
+  return useInfiniteQuery({
+    queryKey: marketerKeys.walletActivity,
+    queryFn: ({ pageParam }) =>
+      marketerApi.walletActivity({
+        page: pageParam,
+        limit: 20,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNext ? lastPage.meta.page + 1 : undefined,
+    enabled,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useRequestWithdrawal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: marketerApi.requestWithdrawal,
+    onSuccess: (result) => {
+      queryClient.setQueryData<MarketerWalletOverview>(
+        marketerKeys.wallet,
+        (current) =>
+          current
+            ? {
+                ...current,
+                availableBalance: result.wallet.availableBalance,
+                heldBalance: result.wallet.heldBalance,
+                canWithdraw:
+                  current.phoneVerified &&
+                  result.wallet.availableBalance >=
+                    current.minimumWithdrawalAmount,
+              }
+            : current,
+      );
+      void queryClient.invalidateQueries({ queryKey: marketerKeys.wallet });
+      void queryClient.invalidateQueries({
+        queryKey: marketerKeys.walletActivityRoot,
+      });
+      void queryClient.invalidateQueries({ queryKey: marketerKeys.profile });
+      void queryClient.invalidateQueries({
+        queryKey: ["marketer", "dashboard"],
+      });
+    },
   });
 }
