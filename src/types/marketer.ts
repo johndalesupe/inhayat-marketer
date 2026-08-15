@@ -151,7 +151,8 @@ export type MarketerProduct = ProductSnapshot & {
   isTop: boolean;
   rank?: number | null;
   expectedBonus: number;
-  bonusPercent: number;
+  bonusPercent: number | null;
+  bonusType?: "percent" | "fixed";
   orderCount?: number;
 };
 
@@ -207,10 +208,19 @@ export type MarketerReferral = {
   name: string;
   code: string;
   link: string;
+  destination: "miniapp" | "web" | "form";
+  formAuthentication: "otp" | "none";
+  showAddressFields: boolean;
+  links: {
+    miniapp: string;
+    web: string;
+    form?: string | null;
+  };
   status: ReferralStatus;
   product: ProductSnapshot;
   expectedBonus: number;
-  bonusPercent: number;
+  bonusPercent: number | null;
+  bonusType?: "percent" | "fixed";
   stats: ReferralStats;
   createdAt: string;
   updatedAt: string;

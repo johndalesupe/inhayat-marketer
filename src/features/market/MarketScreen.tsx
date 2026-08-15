@@ -9,6 +9,7 @@ import {
   CircleX,
   Clipboard,
   Images,
+  Globe2,
   Layers3,
   Link2,
   LoaderCircle,
@@ -16,6 +17,7 @@ import {
   PackageCheck,
   Send,
   Sparkles,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -59,6 +61,15 @@ const referralSchema = yup.object({
     .min(3, "Nom kamida 3 ta belgidan iborat bo'lsin")
     .max(80, "Nom 80 ta belgidan oshmasin")
     .required("Referal nomini kiriting"),
+  destination: yup
+    .mixed<"miniapp" | "web" | "form">()
+    .oneOf(["miniapp", "web", "form"])
+    .required(),
+  formAuthentication: yup
+    .mixed<"otp" | "none">()
+    .oneOf(["otp", "none"])
+    .required(),
+  showAddressFields: yup.boolean().required(),
 });
 type ReferralForm = yup.InferType<typeof referralSchema>;
 
@@ -230,7 +241,12 @@ function ReferralSheet({
   const [copied, setCopied] = useState(false);
   const form = useForm<ReferralForm>({
     resolver: yupResolver(referralSchema),
-    defaultValues: { name: `${product.nameUz} uchun havola` },
+    defaultValues: {
+      name: `${product.nameUz} uchun havola`,
+      destination: "miniapp",
+      formAuthentication: "otp",
+      showAddressFields: true,
+    },
   });
 
   const created = mutation.data as MarketerReferral | undefined;
@@ -278,6 +294,9 @@ function ReferralSheet({
                   name: values.name.trim(),
                   productId: product.id,
                   idempotencyKey: createIdempotencyKey(),
+                  destination: values.destination,
+                  formAuthentication: values.formAuthentication,
+                  showAddressFields: values.showAddressFields,
                 },
                 {
                   onSuccess: () => haptic("success"),
@@ -298,6 +317,79 @@ function ReferralSheet({
               />
               <FieldError message={form.formState.errors.name?.message} />
             </label>
+            <fieldset className="mt-3">
+              <legend className="mb-1.5 text-xs font-bold text-[var(--ink)]">
+                Havola turi
+              </legend>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  ["miniapp", "Mini App", Send],
+                  ["web", "Web sayt", Globe2],
+                  ["form", "Tezkor forma", Clipboard],
+                ] as const).map(([value, label, Icon]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => form.setValue("destination", value)}
+                    className={clsx(
+                      "flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 text-[10px] font-extrabold transition",
+                      form.watch("destination") === value
+                        ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
+                        : "border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            {form.watch("destination") === "form" && (
+              <div className="mt-3 space-y-2 rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-2.5">
+                <p className="flex items-center gap-1.5 text-[11px] font-extrabold text-[var(--ink)]">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
+                  Forma sozlamalari
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {([
+                    ["otp", "SMS tasdiq bilan"],
+                    ["none", "Tasdiqsiz"],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() =>
+                        form.setValue("formAuthentication", value)
+                      }
+                      className={clsx(
+                        "min-h-9 rounded-lg border px-2 text-[10px] font-bold",
+                        form.watch("formAuthentication") === value
+                          ? "border-[var(--brand)] bg-[var(--surface)] text-[var(--brand)]"
+                          : "border-[var(--line)] text-[var(--muted)]",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <label className="flex items-start gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-2.5">
+                  <input
+                    type="checkbox"
+                    {...form.register("showAddressFields")}
+                    className="mt-0.5 h-4 w-4 accent-[var(--brand)]"
+                  />
+                  <span>
+                    <span className="block text-[11px] font-bold text-[var(--ink)]">
+                      Manzil tanlashni ko'rsatish
+                    </span>
+                    <span className="mt-0.5 block text-[9px] leading-4 text-[var(--muted)]">
+                      O'chirilsa, faqat ism va telefon orqali lead qabul qilinadi.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            )}
             {mutation.isError && (
               <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
                 {apiErrorMessage(mutation.error, "Referal yaratilmadi")}
@@ -327,6 +419,29 @@ function ReferralSheet({
             <p className="mt-1 break-all text-xs font-semibold leading-5 text-[var(--muted)]">
               {created.link}
             </p>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-1.5">
+            {([
+              ["Mini App", created.links?.miniapp],
+              ["Web sayt", created.links?.web],
+              ["Tezkor forma", created.links?.form],
+            ] as const).map(([label, url]) =>
+              url ? (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={async () => {
+                    await copyText(url);
+                    setCopied(true);
+                    haptic("success");
+                  }}
+                  className="flex min-h-9 items-center justify-between gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[10px] font-bold text-[var(--ink)]"
+                >
+                  <span>{label}</span>
+                  <Clipboard className="h-3.5 w-3.5 text-[var(--muted)]" />
+                </button>
+              ) : null,
+            )}
           </div>
           <div className="mt-2.5 grid grid-cols-2 gap-2">
             <Button

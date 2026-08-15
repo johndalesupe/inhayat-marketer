@@ -150,6 +150,9 @@ export const marketerApi = {
     name: string;
     productId: string;
     idempotencyKey: string;
+    destination: "miniapp" | "web" | "form";
+    formAuthentication?: "otp" | "none";
+    showAddressFields?: boolean;
   }) =>
     request<MarketerReferral>({
       url: "/api/v1/marketer/referrals",
