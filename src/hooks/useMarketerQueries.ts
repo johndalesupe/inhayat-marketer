@@ -180,6 +180,18 @@ export function useUpdateReferral() {
   });
 }
 
+export function useEnsureReferralStreamLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: marketerApi.ensureReferralStreamLink,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: marketerKeys.referralsRoot,
+      });
+    },
+  });
+}
+
 export function usePublishReferral() {
   return useMutation({
     mutationFn: ({

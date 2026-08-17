@@ -123,7 +123,7 @@ function OrderCard({ order }: { order: MarketerOrder }) {
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-[var(--line)] bg-[var(--surface-raised)] px-3.5 py-3">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 truncate text-[10px] font-bold text-[var(--muted)]">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-[var(--brand)]" />
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-[var(--muted)]" />
             {order.region}, {order.city}
           </p>
           <p className="mt-1 truncate text-[9px] font-semibold text-[var(--muted)]">
@@ -201,15 +201,15 @@ export function OrdersScreen() {
   );
 
   return (
-    <div className="space-y-5 pb-1">
+    <div className="space-y-3 pb-1">
       <PageTitle
         eyebrow="Hisob · Buyurtmalar"
         title="Buyurtmalarim"
         description="Sizning referal sessiyalaringizdan kelgan buyurtmalar."
       />
 
-      <div className="flex items-start gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+      <div className="flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
           <ShieldCheck className="h-4 w-4" />
         </span>
         <p className="pt-0.5 text-[11px] font-semibold leading-[18px] text-[var(--muted)]">

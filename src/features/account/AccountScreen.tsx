@@ -299,7 +299,7 @@ function AccountLink({
       href={href}
       className="flex items-center gap-2.5 border-b border-[var(--line)] px-3 py-3 last:border-0 active:bg-[var(--surface-muted)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--brand)]"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
         <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 flex-1">
@@ -343,9 +343,9 @@ export function AccountScreen() {
     <div className="space-y-3">
       <AccountHeading />
 
-      <Panel className="rounded-2xl p-3.5">
+      <Panel className="rounded-xl p-3.5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-sm font-black text-[var(--brand)]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-sm font-black text-[var(--ink)]">
             {profile.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -367,7 +367,7 @@ export function AccountScreen() {
               {profile.username ? `@${profile.username}` : "Telegram marketer"}
             </p>
             <div className="mt-1">
-              <span className="inline-flex min-h-5 items-center rounded-full border border-[var(--brand-line)] bg-[var(--brand-soft)] px-2 text-[9px] font-extrabold text-[var(--brand)]">
+              <span className="inline-flex min-h-5 items-center rounded-full border border-[var(--line)] bg-[var(--surface-muted)] px-2 text-[9px] font-extrabold text-[var(--muted)]">
                 {formatDate(profile.joinedAt)} dan beri
               </span>
             </div>
@@ -375,18 +375,18 @@ export function AccountScreen() {
         </div>
       </Panel>
 
-      <Panel className="overflow-hidden rounded-2xl border-[var(--brand-line)]">
-        <div className="flex items-start justify-between gap-3 p-4">
+      <Panel className="overflow-hidden rounded-xl">
+        <div className="flex items-start justify-between gap-3 p-3.5">
           <div>
             <div className="flex items-center gap-2 text-[11px] font-bold text-[var(--muted)]">
-              <WalletCards className="h-3.5 w-3.5 text-[var(--brand)]" />
+              <WalletCards className="h-3.5 w-3.5 text-[var(--muted)]" />
               Marketer hamyoni
             </div>
             <p className="mt-1 text-[24px] font-black tracking-[-0.04em] text-[var(--ink)]">
               {formatMoney(profile.wallet.availableBalance)}
             </p>
           </div>
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
             <WalletCards className="h-4 w-4" />
           </span>
         </div>
@@ -414,7 +414,7 @@ export function AccountScreen() {
         <button
           type="button"
           onClick={() => setPhoneOpen(true)}
-          className="flex w-full items-center gap-2.5 rounded-2xl border border-[var(--warning-line)] bg-[var(--warning-soft)] p-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]"
+          className="flex w-full items-center gap-2.5 rounded-xl border border-[var(--warning-line)] bg-[var(--warning-soft)] p-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)]"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--warning-line)] bg-[var(--surface)] text-[var(--warning)]">
             <Phone className="h-4 w-4" />
@@ -431,7 +431,7 @@ export function AccountScreen() {
         </button>
       )}
 
-      <Panel className="overflow-hidden rounded-2xl">
+      <Panel className="overflow-hidden rounded-xl">
         <AccountLink
           href="/account/wallet"
           icon={WalletCards}
@@ -452,7 +452,7 @@ export function AccountScreen() {
         />
       </Panel>
 
-      <Panel className="overflow-hidden rounded-2xl">
+      <Panel className="overflow-hidden rounded-xl">
         <button
           type="button"
           onClick={() => openTelegramLink(supportUrl)}

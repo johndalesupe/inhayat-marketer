@@ -197,6 +197,12 @@ export const marketerApi = {
       data: payload,
     }),
 
+  ensureReferralStreamLink: (referralId: string) =>
+    request<MarketerReferral>({
+      url: `/api/v1/marketer/referrals/${encodeURIComponent(referralId)}/stream-link`,
+      method: "POST",
+    }),
+
   publishReferral: (
     referralId: string,
     payload: { chatIds: string[]; language: "uz" | "ru" },

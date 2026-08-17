@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import * as yup from "yup";
 import { ProductImage } from "@/src/components/ui/ProductImage";
 import {
@@ -166,7 +166,7 @@ function ProductCard({
         <p className="mt-1 text-xs font-extrabold text-[var(--ink)]">
           {formatMoney(price)}
         </p>
-        <div className="mt-2 flex items-center justify-between gap-1 rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] px-2 py-1.5">
+        <div className="mt-2 flex items-center justify-between gap-1 rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] px-2 py-1.5">
           <p className="truncate text-[9px] font-semibold text-[var(--muted)]">
             Taxminiy bonus
           </p>
@@ -247,6 +247,11 @@ function ReferralSheet({
       formAuthentication: "otp",
       showAddressFields: true,
     },
+  });
+  const destination = useWatch({ control: form.control, name: "destination" });
+  const formAuthentication = useWatch({
+    control: form.control,
+    name: "formAuthentication",
   });
 
   const created = mutation.data as MarketerReferral | undefined;
@@ -333,7 +338,7 @@ function ReferralSheet({
                     onClick={() => form.setValue("destination", value)}
                     className={clsx(
                       "flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 text-[10px] font-extrabold transition",
-                      form.watch("destination") === value
+                      destination === value
                         ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
                         : "border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]",
                     )}
@@ -345,10 +350,10 @@ function ReferralSheet({
               </div>
             </fieldset>
 
-            {form.watch("destination") === "form" && (
+            {destination === "form" && (
               <div className="mt-3 space-y-2 rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-2.5">
                 <p className="flex items-center gap-1.5 text-[11px] font-extrabold text-[var(--ink)]">
-                  <ShieldCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
+                  <ShieldCheck className="h-3.5 w-3.5 text-[var(--muted)]" />
                   Forma sozlamalari
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -364,7 +369,7 @@ function ReferralSheet({
                       }
                       className={clsx(
                         "min-h-9 rounded-lg border px-2 text-[10px] font-bold",
-                        form.watch("formAuthentication") === value
+                        formAuthentication === value
                           ? "border-[var(--brand)] bg-[var(--surface)] text-[var(--brand)]"
                           : "border-[var(--line)] text-[var(--muted)]",
                       )}
@@ -381,10 +386,10 @@ function ReferralSheet({
                   />
                   <span>
                     <span className="block text-[11px] font-bold text-[var(--ink)]">
-                      Manzil tanlashni ko'rsatish
+                      Manzil tanlashni ko&apos;rsatish
                     </span>
                     <span className="mt-0.5 block text-[9px] leading-4 text-[var(--muted)]">
-                      O'chirilsa, faqat ism va telefon orqali lead qabul qilinadi.
+                      O&apos;chirilsa, faqat ism va telefon orqali lead qabul qilinadi.
                     </span>
                   </span>
                 </label>
@@ -738,7 +743,7 @@ function BulkPublishSheet({
       ) : (
         <>
           <Panel className="flex items-start gap-3 bg-[var(--surface-muted)] p-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]">
               <Images className="h-4.5 w-4.5" />
             </span>
             <div className="min-w-0">
@@ -1079,7 +1084,7 @@ export function MarketScreen() {
         {bulkMode && (
           <Panel className="mx-1 mb-1.5 mt-1 bg-[var(--surface)] p-2.5">
             <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-[var(--brand-soft)] text-[var(--brand)]">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
                 <PackageCheck className="h-4.5 w-4.5" />
               </span>
               <div className="min-w-0 flex-1">
@@ -1175,9 +1180,9 @@ export function MarketScreen() {
                 ) : productsQuery.hasNextPage ? (
                   <div className="flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-[10px] font-bold text-[var(--muted)]">
                     {productsQuery.isFetchingNextPage ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin text-[var(--brand)]" />
+                      <LoaderCircle className="h-4 w-4 animate-spin text-[var(--muted)]" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-[var(--brand)]" />
+                      <ChevronDown className="h-4 w-4 text-[var(--muted)]" />
                     )}
                     {productsQuery.isFetchingNextPage
                       ? "Yana mahsulotlar yuklanmoqda"

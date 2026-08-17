@@ -214,6 +214,8 @@ export type MarketerReferral = {
   links: {
     miniapp: string;
     web: string;
+    stream?: string | null;
+    /** Backward-compatible name used by older marketer-service versions. */
     form?: string | null;
   };
   status: ReferralStatus;

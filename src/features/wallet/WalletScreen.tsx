@@ -178,19 +178,19 @@ function WalletSummary({
   onWithdraw: () => void;
 }) {
   return (
-    <Panel className="overflow-hidden border-[var(--brand-line)]">
-      <div className="p-4">
+    <Panel className="overflow-hidden">
+      <div className="p-3.5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--muted)]">
-              <WalletCards className="h-3.5 w-3.5 text-[var(--brand)]" />
+              <WalletCards className="h-3.5 w-3.5 text-[var(--muted)]" />
               Yechish mumkin
             </p>
             <p className="mt-1 truncate text-[26px] font-black tabular-nums tracking-[-0.045em] text-[var(--ink)]">
               {formatMoney(available)}
             </p>
           </div>
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
             <Banknote className="h-4.5 w-4.5" />
           </span>
         </div>
@@ -401,7 +401,7 @@ function ActivityCard({ activity }: { activity: MarketerWalletActivity }) {
           className={clsx(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
             isWithdrawal
-              ? "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]"
+              ? "border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]"
               : isCredit
                 ? "border-[var(--success-line)] bg-[var(--success-soft)] text-[var(--success)]"
                 : "border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger)]",

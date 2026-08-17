@@ -160,8 +160,8 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
     const themeChanged = () => syncEnvironment();
 
     try {
-      app.setHeaderColor?.("#f5f7fb");
-      app.setBackgroundColor?.("#f5f7fb");
+      app.setHeaderColor?.("#f4f6f4");
+      app.setBackgroundColor?.("#f4f6f4");
       if (supported(app, "7.10")) app.setBottomBarColor?.("#ffffff");
       app.ready();
       app.expand();

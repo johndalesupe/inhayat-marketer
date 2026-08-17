@@ -71,7 +71,7 @@ function ScreenHeading({
         accent ? (
         <span
           aria-hidden="true"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]"
         >
           <Sparkles className="h-4.5 w-4.5" />
         </span>
@@ -105,9 +105,9 @@ function MetricCard({
   const change = metric.changePercent;
   const rising = (change ?? 0) >= 0;
   return (
-    <Panel className="min-w-0 rounded-2xl p-3">
+    <Panel className="min-w-0 rounded-xl p-3">
       <div className="flex items-start justify-between gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
           {icon}
         </span>
         {change != null && (
@@ -138,8 +138,8 @@ function MetricCard({
 
 function WalletCard({ data }: { data: MarketerDashboard }) {
   return (
-    <Panel className="overflow-hidden rounded-2xl border-[var(--brand-line)]">
-      <div className="p-4">
+    <Panel className="overflow-hidden rounded-xl">
+      <div className="p-3.5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold text-[var(--muted)]">
@@ -149,7 +149,7 @@ function WalletCard({ data }: { data: MarketerDashboard }) {
               {formatMoney(data.wallet.availableBalance)}
             </p>
           </div>
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
             <Banknote className="h-4.5 w-4.5" />
           </span>
         </div>
@@ -232,10 +232,10 @@ function TrendChart({ data }: { data: MarketerDashboard["trend"] }) {
           <Line
             type="monotone"
             dataKey="salesAmount"
-            stroke="#2563eb"
+            stroke="#344054"
             strokeWidth={2.25}
             dot={false}
-            activeDot={{ r: 3.5, fill: "#2563eb", stroke: "#ffffff" }}
+            activeDot={{ r: 3.5, fill: "#344054", stroke: "#ffffff" }}
           />
           <Line
             type="monotone"
@@ -276,7 +276,7 @@ function Funnel({ data }: { data: MarketerDashboard["funnel"] }) {
           <div key={row.label}>
             <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px]">
               <span className="flex items-center gap-2 font-bold text-[var(--muted)]">
-                <Icon className="h-3.5 w-3.5 text-[var(--brand)]" />
+                <Icon className="h-3.5 w-3.5 text-[var(--muted)]" />
                 {row.label}
               </span>
               <span className="font-black tabular-nums text-[var(--ink)]">
@@ -285,7 +285,7 @@ function Funnel({ data }: { data: MarketerDashboard["funnel"] }) {
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-muted)]">
               <div
-                className="h-full rounded-full bg-[var(--brand)]"
+                className="h-full rounded-full bg-[var(--ink)] opacity-70"
                 style={{
                   width: `${Math.max((row.value / max) * 100, row.value ? 4 : 0)}%`,
                 }}
@@ -314,7 +314,7 @@ function ActivityList({
     <div className="mt-1.5 divide-y divide-[var(--line)]">
       {items.slice(0, 6).map((item) => (
         <div key={item.id} className="flex items-center gap-2.5 py-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
             {item.type === "bonus" || item.type === "payout" ? (
               <BadgeDollarSign className="h-3.5 w-3.5" />
             ) : (
@@ -420,7 +420,7 @@ export function DashboardScreen() {
         />
       </div>
 
-      <Panel className="rounded-2xl p-4">
+      <Panel className="rounded-xl p-3.5">
         <div className="flex items-center justify-between gap-3">
           <CompactHeading
             title="Savdo dinamikasi"
@@ -448,7 +448,7 @@ export function DashboardScreen() {
         <TrendChart data={data.trend} />
         <div className="mt-1 flex items-center justify-center gap-4 text-[10px] font-bold text-[var(--muted)]">
           <span className="flex items-center gap-1.5">
-            <i className="h-1.5 w-1.5 rounded-full bg-[var(--brand)]" />
+            <i className="h-1.5 w-1.5 rounded-full bg-[var(--ink)]" />
             Savdo
           </span>
           <span className="flex items-center gap-1.5">
@@ -458,7 +458,7 @@ export function DashboardScreen() {
         </div>
       </Panel>
 
-      <Panel className="rounded-2xl p-4">
+      <Panel className="rounded-xl p-3.5">
         <CompactHeading
           title="Natijalar voronkasi"
           caption="Ko'rishdan yetkazib berishgacha"
@@ -467,7 +467,7 @@ export function DashboardScreen() {
       </Panel>
 
       {data.topProducts.length > 0 && (
-        <Panel className="rounded-2xl p-4">
+        <Panel className="rounded-xl p-3.5">
           <CompactHeading
             title="Yaxshi ishlayotgan mahsulotlar"
             caption="Tanlangan davr natijasi"
@@ -505,8 +505,8 @@ export function DashboardScreen() {
       )}
 
       {!data.recentActivity.length && !data.topProducts.length ? (
-        <Panel className="rounded-2xl px-5 py-7 text-center">
-          <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+        <Panel className="rounded-xl px-4 py-6 text-center">
+          <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
             <ShoppingBag className="h-4.5 w-4.5" />
           </span>
           <h2 className="mt-3 text-[15px] font-extrabold text-[var(--ink)]">
@@ -518,7 +518,7 @@ export function DashboardScreen() {
           </p>
         </Panel>
       ) : (
-        <Panel className="rounded-2xl p-4">
+        <Panel className="rounded-xl p-3.5">
           <CompactHeading title="So'nggi faollik" />
           <ActivityList items={data.recentActivity} />
         </Panel>

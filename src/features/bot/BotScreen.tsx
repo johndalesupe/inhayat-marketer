@@ -105,8 +105,8 @@ function ConnectBotForm() {
   });
   return (
     <Panel className="overflow-hidden">
-      <div className="flex items-start gap-3 border-b border-[var(--line)] bg-[var(--surface-raised)] p-4">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--surface)] text-[var(--brand)]">
+      <div className="flex items-start gap-3 border-b border-[var(--line)] bg-[var(--surface-raised)] p-3.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]">
           <Bot className="h-[18px] w-[18px]" />
         </span>
         <div className="min-w-0">
@@ -120,7 +120,7 @@ function ConnectBotForm() {
         </div>
       </div>
       <form
-        className="space-y-3.5 p-4"
+        className="space-y-3 p-3.5"
         onSubmit={form.handleSubmit((values) =>
           mutation.mutate(
             {
@@ -204,9 +204,9 @@ function BotOverview({
   };
   return (
     <Panel className="overflow-hidden">
-      <div className="border-b border-[var(--line)] p-4">
+      <div className="border-b border-[var(--line)] p-3.5">
         <div className="flex items-start gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
             <Bot className="h-[19px] w-[19px]" />
           </span>
           <div className="min-w-0 flex-1">
@@ -215,7 +215,7 @@ function BotOverview({
                 <p className="truncate text-[15px] font-black tracking-[-0.01em] text-[var(--ink)]">
                   {bot.displayName}
                 </p>
-                <p className="mt-0.5 truncate text-[11px] font-bold text-[var(--brand)]">
+                <p className="mt-0.5 truncate text-[11px] font-bold text-[var(--muted)]">
                   @{bot.username}
                 </p>
               </div>
@@ -268,7 +268,7 @@ function BotOverview({
           <p className="text-[10px] font-bold text-[var(--muted)]">
             Post yuborish mumkin
           </p>
-          <p className="mt-0.5 text-lg font-black tabular-nums tracking-[-0.02em] text-[var(--brand)]">
+          <p className="mt-0.5 text-lg font-black tabular-nums tracking-[-0.02em] text-[var(--ink)]">
             {bot.publishableChatsCount}
           </p>
         </div>
@@ -383,7 +383,7 @@ function ChatsPanel({ bot }: { bot: MarketerBot }) {
                 key={chat.id}
                 className="flex items-center gap-3 p-3 transition active:bg-[var(--surface-raised)]"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] text-[var(--brand)]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] text-[var(--muted)]">
                   {chat.type === "channel" ? (
                     <Megaphone className="h-4 w-4" />
                   ) : (
@@ -578,7 +578,7 @@ export function BotScreen() {
 
   if (query.isLoading) return <PageSkeleton />;
   return (
-    <div className="space-y-5 pb-1">
+    <div className="space-y-3 pb-1">
       <PageTitle
         eyebrow="Hisob · Mening botim"
         title="Mening botim"

@@ -18,7 +18,7 @@ import { useTelegramBackButton } from "@/src/telegram/useTelegramBackButton";
 import { Button, PageSkeleton, Panel } from "./ui/primitives";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: ChartNoAxesCombined },
+  { href: "/", label: "Asosiy", icon: ChartNoAxesCombined },
   { href: "/market", label: "Market", icon: Store },
   { href: "/referrals", label: "Referallar", icon: Link2 },
   { href: "/account", label: "Hisob", icon: CircleUserRound },
@@ -34,7 +34,7 @@ function AuthFailure({ message }: { message: string }) {
   return (
     <div className="flex min-h-[calc(100dvh-var(--app-safe-top)-var(--app-safe-bottom))] items-center py-8">
       <Panel className="w-full px-5 py-8 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--ink)]">
           <Bot className="h-6 w-6" />
         </span>
         <h1 className="mt-4 text-xl font-extrabold tracking-[-0.025em] text-[var(--ink)]">
@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (status === "booting") {
     return (
-      <main className="app-shell mx-auto min-h-[100dvh] max-w-[560px] pb-[calc(88px+var(--app-safe-bottom))] pt-[calc(10px+var(--app-safe-top))]">
+      <main className="app-shell mx-auto min-h-[100dvh] max-w-[560px] pb-[calc(92px+var(--app-safe-bottom))] pt-[calc(12px+var(--app-safe-top))]">
         <PageSkeleton />
       </main>
     );
@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <main className="app-shell mx-auto min-h-[100dvh] max-w-[560px] pb-[calc(88px+var(--app-safe-bottom))] pt-[calc(10px+var(--app-safe-top))]">
+    <main className="app-shell mx-auto min-h-[100dvh] max-w-[560px] pb-[calc(92px+var(--app-safe-bottom))] pt-[calc(12px+var(--app-safe-top))]">
       {status === "preview" && (
         <div className="mb-3 flex items-center gap-2 rounded-[14px] border border-[var(--warning-line)] bg-[var(--warning-soft)] px-3 py-2 text-[11px] font-bold text-[var(--warning)]">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
@@ -99,10 +99,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="min-w-0">{children}</div>
 
       <nav
-        className="bottom-nav-frame fixed bottom-0 z-50 rounded-t-[22px] border-x border-t border-[var(--line)] bg-[color:var(--surface-glass)] px-2 pt-1 backdrop-blur-xl"
+        className="bottom-nav-frame fixed z-50 rounded-[20px] border border-[var(--line)] bg-[color:var(--surface-glass)] p-1.5 backdrop-blur-xl"
         aria-label="Asosiy bo'limlar"
       >
-        <div className="grid grid-cols-4 gap-1 pb-[calc(6px+var(--app-safe-bottom))]">
+        <div className="grid grid-cols-4 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active =
@@ -115,20 +115,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={clsx(
-                  "flex h-[62px] flex-col items-center justify-center gap-0.5 rounded-[15px] text-[10px] font-bold transition active:scale-[0.98]",
+                  "flex h-[56px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[14px] text-[10px] font-bold transition duration-150 active:scale-[0.98]",
                   active
                     ? "text-[var(--brand)]"
-                    : "text-[var(--muted)] active:bg-[var(--surface-muted)]",
+                    : "text-[var(--muted)] hover:bg-[var(--surface-raised)] active:bg-[var(--surface-muted)]",
                 )}
               >
                 <span
                   className={clsx(
-                    "flex h-8 min-w-11 items-center justify-center rounded-full px-3 transition",
+                    "flex h-7 min-w-10 items-center justify-center rounded-full px-2.5 transition duration-150",
                     active && "bg-[var(--brand-soft)]",
                   )}
                 >
                   <Icon
-                    className={clsx("h-[19px] w-[19px]", active && "stroke-[2.4]")}
+                    className={clsx("h-[18px] w-[18px]", active && "stroke-[2.35]")}
                   />
                 </span>
                 <span>{item.label}</span>
