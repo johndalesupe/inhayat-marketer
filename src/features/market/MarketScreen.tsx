@@ -1,28 +1,29 @@
 "use client";
 
-import { yupResolver } from "@hookform/resolvers/yup";
 import { clsx } from "clsx";
+import Link from "next/link";
 import {
+  ArrowUpRight,
+  BadgeDollarSign,
   Check,
   CheckCircle2,
   ChevronDown,
   CircleX,
-  Clipboard,
+  Clock3,
+  Flame,
   Images,
-  Globe2,
   Layers3,
   Link2,
   LoaderCircle,
   Megaphone,
   PackageCheck,
   Send,
-  Sparkles,
-  ShieldCheck,
+  ShoppingBag,
+  Trophy,
+  WalletCards,
   X,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import * as yup from "yup";
 import { ProductImage } from "@/src/components/ui/ProductImage";
 import {
   BottomSheet,
@@ -38,7 +39,6 @@ import { useInfiniteSentinel } from "@/src/hooks/useInfiniteSentinel";
 import {
   useBotChats,
   useBulkReferralPublication,
-  useCreateReferral,
   useProductCategories,
   useProducts,
   useProfile,
@@ -47,45 +47,105 @@ import {
 import { apiErrorMessage, createIdempotencyKey } from "@/src/lib/api";
 import { formatMoney } from "@/src/lib/format";
 import { useTelegram } from "@/src/telegram/TelegramProvider";
+import { CreateReferralSheet } from "@/src/features/market/components/CreateReferralSheet";
 import type {
   BulkReferralSelection,
   MarketerCategory,
   MarketerProduct,
-  MarketerReferral,
 } from "@/src/types/marketer";
 
-const referralSchema = yup.object({
-  name: yup
-    .string()
-    .trim()
-    .min(3, "Nom kamida 3 ta belgidan iborat bo'lsin")
-    .max(80, "Nom 80 ta belgidan oshmasin")
-    .required("Referal nomini kiriting"),
-  destination: yup
-    .mixed<"miniapp" | "web" | "form">()
-    .oneOf(["miniapp", "web", "form"])
-    .required(),
-  formAuthentication: yup
-    .mixed<"otp" | "none">()
-    .oneOf(["otp", "none"])
-    .required(),
-  showAddressFields: yup.boolean().required(),
-});
-type ReferralForm = yup.InferType<typeof referralSchema>;
+type MarketSort = "top" | "most_sold" | "newest" | "most_paid";
 
-async function copyText(value: string) {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
-  }
-  const input = document.createElement("textarea");
-  input.value = value;
-  input.style.position = "fixed";
-  input.style.opacity = "0";
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand("copy");
-  input.remove();
+const MARKET_SORTS = [
+  {
+    value: "top",
+    label: "Top mahsulotlar",
+    shortLabel: "Top",
+    icon: Trophy,
+  },
+  {
+    value: "most_sold",
+    label: "Eng ko'p sotilgan",
+    shortLabel: "Ko'p sotilgan",
+    icon: Flame,
+  },
+  {
+    value: "newest",
+    label: "Yangi mahsulotlar",
+    shortLabel: "Yangi",
+    icon: Clock3,
+  },
+  {
+    value: "most_paid",
+    label: "Eng ko'p bonusli",
+    shortLabel: "Ko'p bonusli",
+    icon: BadgeDollarSign,
+  },
+] as const satisfies ReadonlyArray<{
+  value: MarketSort;
+  label: string;
+  shortLabel: string;
+  icon: typeof Trophy;
+}>;
+
+function ProductArtwork({
+  product,
+  selectionMode,
+  selected,
+}: {
+  product: MarketerProduct;
+  selectionMode: boolean;
+  selected: boolean;
+}) {
+  return (
+    <div className="relative overflow-hidden bg-[var(--surface-muted)]">
+      <ProductImage
+        src={product.thumbnailUrl}
+        alt={product.nameUz}
+        className="aspect-[4/5] w-full"
+      />
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1.5 p-2">
+        <div className="flex min-w-0 flex-wrap gap-1">
+          {product.isTop && (
+            <span className="inline-flex h-6 items-center gap-1 rounded-full border border-white/70 bg-white/95 px-2 text-[10px] font-black tracking-[0.04em] text-[var(--ink)] backdrop-blur-sm">
+              <Trophy className="h-3 w-3" />
+              TOP
+            </span>
+          )}
+        </div>
+        {selectionMode && (
+          <span
+            className={clsx(
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border backdrop-blur-sm transition",
+              selected
+                ? "border-[var(--brand)] bg-[var(--brand)] text-white"
+                : "border-white/80 bg-white/95 text-[var(--muted)]",
+            )}
+          >
+            {selected ? (
+              <Check className="h-4 w-4 stroke-[3]" />
+            ) : (
+              <span className="h-2 w-2 rounded-full bg-current opacity-50" />
+            )}
+          </span>
+        )}
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 bg-gradient-to-t from-black/45 via-black/10 to-transparent p-2 pt-8">
+        {product.categoryName ? (
+          <span className="min-w-0 truncate rounded-full border border-white/40 bg-white/92 px-2 py-1 text-[10px] font-bold text-[var(--ink)] backdrop-blur-sm">
+            {product.categoryName}
+          </span>
+        ) : (
+          <span />
+        )}
+        {!product.isAvailable && (
+          <span className="shrink-0 rounded-full bg-black/78 px-2 py-1 text-[10px] font-bold text-white">
+            Mavjud emas
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function ProductCard({
@@ -112,98 +172,134 @@ function ProductCard({
   return (
     <article
       className={clsx(
-        "min-w-0 overflow-hidden rounded-[12px] border bg-[var(--surface)] transition",
+        "min-w-0 overflow-hidden rounded-[16px] border bg-[var(--surface)] transition duration-150",
         selectionMode && selected
           ? "border-[var(--brand)] ring-2 ring-[var(--brand-ring)]"
-          : "border-[var(--line)]",
+          : "border-[var(--line-strong)]",
       )}
     >
-      <button
-        type="button"
-        className="relative block w-full overflow-hidden bg-[var(--surface-muted)] text-left disabled:cursor-not-allowed"
-        disabled={!selectionMode || selectionDisabled}
-        onClick={() => onToggle?.(product)}
-        aria-label={
-          selectionMode
-            ? `${product.nameUz} mahsulotini ${
-                selected ? "tanlovdan chiqarish" : "tanlash"
-              }`
-            : undefined
-        }
-      >
-        <ProductImage
-          src={product.thumbnailUrl}
-          alt={product.nameUz}
-          className="aspect-[4/5] w-full"
-        />
-        {selectionMode && (
-          <span
+      {selectionMode ? (
+        <button
+          type="button"
+          className="block w-full overflow-hidden text-left disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={selectionDisabled}
+          onClick={() => onToggle?.(product)}
+          aria-label={`${product.nameUz} mahsulotini ${
+            selected ? "tanlovdan chiqarish" : "tanlash"
+          }`}
+        >
+          <ProductArtwork
+            product={product}
+            selectionMode
+            selected={selected}
+          />
+        </button>
+      ) : (
+        <Link
+          href={`/market/products/${product.id}`}
+          prefetch={false}
+          className="block overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--brand-ring)]"
+          aria-label={`${product.nameUz} tafsilotlarini ko'rish`}
+        >
+          <ProductArtwork
+            product={product}
+            selectionMode={false}
+            selected={false}
+          />
+        </Link>
+      )}
+
+      <div className="p-2.5">
+        {selectionMode ? (
+          <p className="line-clamp-2 min-h-[40px] text-[13px] font-bold leading-5 text-[var(--ink)]">
+            {product.nameUz}
+          </p>
+        ) : (
+          <Link
+            href={`/market/products/${product.id}`}
+            prefetch={false}
+            className="line-clamp-2 min-h-[40px] text-[13px] font-bold leading-5 text-[var(--ink)] outline-none transition hover:text-[var(--brand)] focus-visible:text-[var(--brand)]"
+          >
+            {product.nameUz}
+          </Link>
+        )}
+
+        <div className="mt-1.5 flex min-h-9 items-end justify-between gap-1">
+          <div className="min-w-0">
+            <p className="text-sm font-black leading-5 text-[var(--ink)]">
+              {formatMoney(price)}
+            </p>
+            {product.discountPrice != null &&
+              product.discountPrice < product.price && (
+                <p className="mt-0.5 truncate text-[10px] font-semibold text-[var(--muted-light)] line-through">
+                  {formatMoney(product.price)}
+                </p>
+              )}
+          </div>
+          {typeof product.orderCount === "number" && (
+            <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-bold text-[var(--muted)]">
+              <ShoppingBag className="h-3 w-3" />
+              {product.orderCount}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-2 flex min-h-11 items-center gap-2 rounded-[11px] border border-[var(--brand-line)] bg-[var(--brand-soft)] px-2.5 py-2">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--surface)] text-[var(--brand)]">
+            <WalletCards className="h-3.5 w-3.5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[9px] font-bold uppercase tracking-[0.06em] text-[var(--muted)]">
+              Kutiladigan bonus
+            </p>
+            <p className="truncate text-xs font-black text-[var(--brand)]">
+              +{formatMoney(product.expectedBonus)}
+            </p>
+          </div>
+        </div>
+
+        {selectionMode ? (
+          <Button
+            variant="secondary"
             className={clsx(
-              "absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border backdrop-blur-sm transition",
-              selected
-                ? "border-[var(--brand)] bg-[var(--brand)] text-white"
-                : "border-white/80 bg-white/90 text-[var(--muted)]",
+              "mt-2 min-h-11 w-full rounded-[10px] px-2 text-xs font-extrabold",
+              selected &&
+                "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]",
             )}
+            disabled={selectionDisabled}
+            onClick={() => onToggle?.(product)}
           >
             {selected ? (
-              <Check className="h-4 w-4 stroke-[3]" />
-            ) : (
-              <span className="h-2 w-2 rounded-full bg-current opacity-50" />
-            )}
-          </span>
-        )}
-        {!product.isAvailable && (
-          <span className="absolute inset-x-2 bottom-2 rounded-md bg-black/70 px-2 py-1 text-center text-[10px] font-bold text-white">
-            Hozir mavjud emas
-          </span>
-        )}
-      </button>
-
-      <div className="p-2">
-        <p className="line-clamp-2 min-h-[34px] text-[12px] font-bold leading-[17px] text-[var(--ink)]">
-          {product.nameUz}
-        </p>
-        <p className="mt-1 text-xs font-extrabold text-[var(--ink)]">
-          {formatMoney(price)}
-        </p>
-        <div className="mt-2 flex items-center justify-between gap-1 rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] px-2 py-1.5">
-          <p className="truncate text-[9px] font-semibold text-[var(--muted)]">
-            Taxminiy bonus
-          </p>
-          <p className="shrink-0 text-[11px] font-extrabold text-[var(--brand)]">
-            +{formatMoney(product.expectedBonus)}
-          </p>
-        </div>
-        <Button
-          variant="secondary"
-          className={clsx(
-            "mt-2 min-h-9 w-full rounded-[10px] px-2 text-[11px] font-extrabold",
-            selectionMode && selected
-              ? "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]"
-              : "text-[var(--brand)]",
-          )}
-          disabled={selectionDisabled}
-          onClick={() =>
-            selectionMode ? onToggle?.(product) : onCreate(product)
-          }
-        >
-          {selectionMode ? (
-            selected ? (
               <Check className="h-3.5 w-3.5" />
             ) : (
               <span className="h-3.5 w-3.5 rounded border border-current" />
-            )
-          ) : (
-            <Link2 className="h-3.5 w-3.5" />
-          )}
-          {selectionMode
-            ? selected
-              ? "Tanlandi"
-              : "Tanlash"
-            : canCreate
-              ? "Referal yaratish"
-              : "Dastur to'xtatilgan"}
-        </Button>
+            )}
+            {selected ? "Tanlandi" : "Tanlash"}
+          </Button>
+        ) : (
+          <div className="mt-2 grid grid-cols-[44px_minmax(0,1fr)] gap-1.5">
+            <Link
+              href={`/market/products/${product.id}`}
+              prefetch={false}
+              aria-label={`${product.nameUz} tafsilotlarini ko'rish`}
+              className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-95"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+            <Button
+              className="min-h-11 rounded-[10px] px-2 text-[11px] font-extrabold"
+              disabled={selectionDisabled}
+              onClick={() => onCreate(product)}
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              {!product.isAvailable
+                ? "Mavjud emas"
+                : canCreate
+                  ? "Referal yaratish"
+                  : "Dastur yopiq"}
+            </Button>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -211,280 +307,22 @@ function ProductCard({
 
 function ProductGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-1">
+    <div className="grid grid-cols-2 gap-1.5 px-1">
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="overflow-hidden rounded-[12px] border border-[var(--line)] bg-[var(--surface)]"
+          className="overflow-hidden rounded-[16px] border border-[var(--line-strong)] bg-[var(--surface)]"
         >
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
           <div className="space-y-1.5 p-2.5">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-9 w-full rounded-lg" />
+            <Skeleton className="h-11 w-full rounded-[11px]" />
+            <Skeleton className="h-9 w-full rounded-[10px]" />
           </div>
         </div>
       ))}
     </div>
-  );
-}
-
-function ReferralSheet({
-  product,
-  onClose,
-}: {
-  product: MarketerProduct;
-  onClose: () => void;
-}) {
-  const mutation = useCreateReferral();
-  const { haptic, openTelegramLink } = useTelegram();
-  const [copied, setCopied] = useState(false);
-  const form = useForm<ReferralForm>({
-    resolver: yupResolver(referralSchema),
-    defaultValues: {
-      name: `${product.nameUz} uchun havola`,
-      destination: "miniapp",
-      formAuthentication: "otp",
-      showAddressFields: true,
-    },
-  });
-  const destination = useWatch({ control: form.control, name: "destination" });
-  const formAuthentication = useWatch({
-    control: form.control,
-    name: "formAuthentication",
-  });
-
-  const created = mutation.data as MarketerReferral | undefined;
-  const close = () => {
-    form.reset();
-    mutation.reset();
-    onClose();
-  };
-
-  return (
-    <BottomSheet
-      open
-      onClose={close}
-      title={created ? "Referal tayyor" : "Yangi referal"}
-      description={
-        created
-          ? "Havolani nusxalang yoki Telegram orqali ulashing."
-          : "Natijalarni keyin aynan shu nom orqali ajrata olasiz."
-      }
-    >
-      {!created && (
-        <>
-          <div className="flex items-center gap-3 rounded-[14px] border border-[var(--line)] bg-[var(--surface)] p-2.5">
-            <ProductImage
-              src={product.thumbnailUrl}
-              alt={product.nameUz}
-              className="h-14 w-11 shrink-0 rounded-lg border border-[var(--line)]"
-              sizes="44px"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="line-clamp-2 text-xs font-bold leading-[17px] text-[var(--ink)]">
-                {product.nameUz}
-              </p>
-              <p className="mt-1 text-[11px] font-extrabold text-[var(--brand)]">
-                Har bir buyurtmadan taxminan{" "}
-                {formatMoney(product.expectedBonus)}
-              </p>
-            </div>
-          </div>
-          <form
-            className="mt-3.5"
-            onSubmit={form.handleSubmit((values) => {
-              mutation.mutate(
-                {
-                  name: values.name.trim(),
-                  productId: product.id,
-                  idempotencyKey: createIdempotencyKey(),
-                  destination: values.destination,
-                  formAuthentication: values.formAuthentication,
-                  showAddressFields: values.showAddressFields,
-                },
-                {
-                  onSuccess: () => haptic("success"),
-                  onError: () => haptic("error"),
-                },
-              );
-            })}
-          >
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-bold text-[var(--ink)]">
-                Referal nomi
-              </span>
-              <input
-                {...form.register("name")}
-                className={inputClass}
-                placeholder="Masalan: Instagram — iyul"
-                autoComplete="off"
-              />
-              <FieldError message={form.formState.errors.name?.message} />
-            </label>
-            <fieldset className="mt-3">
-              <legend className="mb-1.5 text-xs font-bold text-[var(--ink)]">
-                Havola turi
-              </legend>
-              <div className="grid grid-cols-3 gap-1.5">
-                {([
-                  ["miniapp", "Mini App", Send],
-                  ["web", "Web sayt", Globe2],
-                  ["form", "Tezkor forma", Clipboard],
-                ] as const).map(([value, label, Icon]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => form.setValue("destination", value)}
-                    className={clsx(
-                      "flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 text-[10px] font-extrabold transition",
-                      destination === value
-                        ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
-                        : "border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]",
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-
-            {destination === "form" && (
-              <div className="mt-3 space-y-2 rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-2.5">
-                <p className="flex items-center gap-1.5 text-[11px] font-extrabold text-[var(--ink)]">
-                  <ShieldCheck className="h-3.5 w-3.5 text-[var(--muted)]" />
-                  Forma sozlamalari
-                </p>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {([
-                    ["otp", "SMS tasdiq bilan"],
-                    ["none", "Tasdiqsiz"],
-                  ] as const).map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() =>
-                        form.setValue("formAuthentication", value)
-                      }
-                      className={clsx(
-                        "min-h-9 rounded-lg border px-2 text-[10px] font-bold",
-                        formAuthentication === value
-                          ? "border-[var(--brand)] bg-[var(--surface)] text-[var(--brand)]"
-                          : "border-[var(--line)] text-[var(--muted)]",
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <label className="flex items-start gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-2.5">
-                  <input
-                    type="checkbox"
-                    {...form.register("showAddressFields")}
-                    className="mt-0.5 h-4 w-4 accent-[var(--brand)]"
-                  />
-                  <span>
-                    <span className="block text-[11px] font-bold text-[var(--ink)]">
-                      Manzil tanlashni ko&apos;rsatish
-                    </span>
-                    <span className="mt-0.5 block text-[9px] leading-4 text-[var(--muted)]">
-                      O&apos;chirilsa, faqat ism va telefon orqali lead qabul qilinadi.
-                    </span>
-                  </span>
-                </label>
-              </div>
-            )}
-            {mutation.isError && (
-              <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
-                {apiErrorMessage(mutation.error, "Referal yaratilmadi")}
-              </p>
-            )}
-            <Button
-              type="submit"
-              loading={mutation.isPending}
-              className="mt-3.5 min-h-10 w-full"
-            >
-              <Sparkles className="h-4 w-4" />
-              Havolani yaratish
-            </Button>
-          </form>
-        </>
-      )}
-
-      {created && (
-        <div>
-          <div className="rounded-[14px] border border-[var(--success-line)] bg-[var(--success-soft)] p-3.5 text-center">
-            <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-[var(--success-line)] bg-[var(--surface)] text-[var(--success)]">
-              <Check className="h-4.5 w-4.5" />
-            </span>
-            <p className="mt-2.5 text-sm font-extrabold text-[var(--ink)]">
-              {created.name}
-            </p>
-            <p className="mt-1 break-all text-xs font-semibold leading-5 text-[var(--muted)]">
-              {created.link}
-            </p>
-          </div>
-          <div className="mt-2 grid grid-cols-2 gap-1.5">
-            {([
-              ["Mini App", created.links?.miniapp],
-              ["Web sayt", created.links?.web],
-              ["Tezkor forma", created.links?.form],
-            ] as const).map(([label, url]) =>
-              url ? (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={async () => {
-                    await copyText(url);
-                    setCopied(true);
-                    haptic("success");
-                  }}
-                  className="flex min-h-9 items-center justify-between gap-2 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-2.5 text-[10px] font-bold text-[var(--ink)]"
-                >
-                  <span>{label}</span>
-                  <Clipboard className="h-3.5 w-3.5 text-[var(--muted)]" />
-                </button>
-              ) : null,
-            )}
-          </div>
-          <div className="mt-2.5 grid grid-cols-2 gap-2">
-            <Button
-              variant="secondary"
-              className="min-h-10"
-              onClick={async () => {
-                await copyText(created.link);
-                setCopied(true);
-                haptic("success");
-              }}
-            >
-              <Clipboard className="h-4 w-4" />
-              {copied ? "Nusxalandi" : "Nusxalash"}
-            </Button>
-            <Button
-              className="min-h-10"
-              onClick={() => {
-                const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(
-                  created.link,
-                )}&text=${encodeURIComponent(created.product.nameUz)}`;
-                openTelegramLink(shareUrl);
-                haptic("light");
-              }}
-            >
-              <Send className="h-4 w-4" />
-              Ulashish
-            </Button>
-          </div>
-          <Button
-            variant="ghost"
-            className="mt-1.5 min-h-9 w-full text-xs"
-            onClick={close}
-          >
-            Tayyor
-          </Button>
-        </div>
-      )}
-    </BottomSheet>
   );
 }
 
@@ -570,6 +408,51 @@ function CategoryStrip({
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function RankingStrip({
+  value,
+  onChange,
+}: {
+  value: MarketSort;
+  onChange: (value: MarketSort) => void;
+}) {
+  return (
+    <div className="-mx-2.5 bg-[var(--canvas)] py-0.5">
+      <nav
+        aria-label="Mahsulotlarni saralash"
+        className="flex gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {MARKET_SORTS.map(({ value: option, label, shortLabel, icon: Icon }) => {
+          const active = option === value;
+          return (
+            <button
+              key={option}
+              type="button"
+              aria-label={label}
+              title={label}
+              aria-pressed={active}
+              onClick={() => onChange(option)}
+              className={clsx(
+                "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[11px] border px-3 text-[11px] font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-[0.98]",
+                active
+                  ? "border-[var(--brand)] bg-[var(--brand)] text-white"
+                  : "border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)]",
+              )}
+            >
+              <Icon
+                className={clsx(
+                  "h-3.5 w-3.5",
+                  !active && "text-[var(--muted)]",
+                )}
+              />
+              {shortLabel}
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
@@ -921,6 +804,7 @@ function BulkPublishSheet({
 
 export function MarketScreen() {
   const [categoryId, setCategoryId] = useState("");
+  const [sort, setSort] = useState<MarketSort>("top");
   const [selectedProduct, setSelectedProduct] =
     useState<MarketerProduct | null>(null);
   const [bulkMode, setBulkMode] = useState(false);
@@ -932,14 +816,17 @@ export function MarketScreen() {
   const categoriesQuery = useProductCategories();
   const productsQuery = useProducts({
     search: "",
-    sort: "popular",
+    sort,
     categoryId,
     available: true,
   });
-  const products = useMemo(
-    () => productsQuery.data?.pages.flatMap((page) => page.items) ?? [],
-    [productsQuery.data],
-  );
+  const products = useMemo(() => {
+    const unique = new Map<string, MarketerProduct>();
+    for (const page of productsQuery.data?.pages ?? []) {
+      for (const product of page.items) unique.set(product.id, product);
+    }
+    return [...unique.values()];
+  }, [productsQuery.data]);
   const availableProducts = useMemo(
     () => products.filter((product) => product.isAvailable),
     [products],
@@ -957,6 +844,8 @@ export function MarketScreen() {
   const selectionCount = wholeCategory ? totalProducts : selectedIds.size;
   const canCreateReferral =
     profileQuery.isSuccess && profileQuery.data.program.enabled;
+  const activeSortLabel =
+    MARKET_SORTS.find((item) => item.value === sort)?.label ?? "Mahsulotlar";
 
   const loadMore = useCallback(() => {
     if (productsQuery.hasNextPage && !productsQuery.isFetchingNextPage) {
@@ -989,6 +878,18 @@ export function MarketScreen() {
     [clearSelection],
   );
 
+  const handleSortSelect = useCallback(
+    (nextSort: MarketSort) => {
+      if (nextSort === sort) return;
+      setSort(nextSort);
+      clearSelection();
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    },
+    [clearSelection, sort],
+  );
+
   const toggleProduct = useCallback((product: MarketerProduct) => {
     setWholeCategory(false);
     setSelectedIds((current) => {
@@ -1017,6 +918,8 @@ export function MarketScreen() {
         onRetry={() => void categoriesQuery.refetch()}
         onSelect={handleCategorySelect}
       />
+
+      <RankingStrip value={sort} onChange={handleSortSelect} />
 
       {profileQuery.isError && (
         <Panel className="border-[var(--danger-line)] bg-[var(--danger-soft)] p-3">
@@ -1054,11 +957,16 @@ export function MarketScreen() {
 
       <section className="-mx-2.5">
         <div className="flex min-h-9 items-center justify-between gap-3 px-1">
-          <p className="text-[11px] font-extrabold text-[var(--muted)]">
-            {productsQuery.isLoading
-              ? "Mahsulotlar yuklanmoqda"
-              : `${totalProducts} ta mahsulot`}
-          </p>
+          <div className="min-w-0">
+            <p className="truncate text-[11px] font-extrabold text-[var(--ink)]">
+              {activeSortLabel}
+            </p>
+            <p className="text-[9px] font-bold text-[var(--muted)]">
+              {productsQuery.isLoading
+                ? "Mahsulotlar yuklanmoqda"
+                : `${totalProducts} ta mahsulot`}
+            </p>
+          </div>
           {!bulkMode ? (
             <button
               type="button"
@@ -1150,7 +1058,7 @@ export function MarketScreen() {
             />
           ) : products.length ? (
             <>
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1.5 px-1">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -1206,13 +1114,11 @@ export function MarketScreen() {
         </div>
       </section>
 
-      {selectedProduct && (
-        <ReferralSheet
-          key={selectedProduct.id}
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-        />
-      )}
+      <CreateReferralSheet
+        key={selectedProduct?.id ?? "closed"}
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
 
       {bulkSheetOpen && bulkSelection && (
         <BulkPublishSheet

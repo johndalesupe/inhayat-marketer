@@ -12,6 +12,7 @@ import type {
   MarketerOrder,
   MarketerPublicationBatch,
   MarketerProduct,
+  MarketerProductDetails,
   MarketerProfile,
   MarketerPublicationJob,
   MarketerReferral,
@@ -124,6 +125,11 @@ export const marketerApi = {
     request<PaginatedData<MarketerProduct>>({
       url: "/api/v1/marketer/products",
       params,
+    }),
+
+  product: (productId: string) =>
+    request<MarketerProductDetails>({
+      url: `/api/v1/marketer/products/${encodeURIComponent(productId)}`,
     }),
 
   topProducts: () =>

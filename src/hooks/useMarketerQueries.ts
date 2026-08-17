@@ -86,6 +86,16 @@ export function useProducts(filters: {
   });
 }
 
+export function useProduct(productId: string) {
+  const enabled = useApiEnabled();
+  return useQuery({
+    queryKey: marketerKeys.product(productId),
+    queryFn: () => marketerApi.product(productId),
+    enabled: enabled && Boolean(productId),
+    staleTime: 2 * 60_000,
+  });
+}
+
 export function useReferrals(filters: {
   search: string;
   status: ReferralStatus | "all";

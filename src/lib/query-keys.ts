@@ -7,6 +7,8 @@ export const marketerKeys = {
     ["marketer", "dashboard", range] as const,
   products: (filters: Record<string, unknown>) =>
     ["marketer", "products", filters] as const,
+  product: (productId: string) =>
+    ["marketer", "products", "detail", productId] as const,
   topProducts: ["marketer", "products", "top"] as const,
   productCategories: ["marketer", "products", "categories"] as const,
   referralsRoot: ["marketer", "referrals"] as const,

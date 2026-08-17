@@ -156,6 +156,29 @@ export type MarketerProduct = ProductSnapshot & {
   orderCount?: number;
 };
 
+export type MarketerProductVariant = {
+  id: string;
+  nameUz: string;
+  nameRu: string | null;
+  price: number | null;
+  discountPrice: number | null;
+  stock: number;
+  isActive: boolean;
+};
+
+export type MarketerProductDetails = MarketerProduct & {
+  descriptionUz: string | null;
+  shortDescriptionUz: string | null;
+  descriptionRu: string | null;
+  shortDescriptionRu: string | null;
+  images: string[];
+  videoUrl: string | null;
+  stock: number;
+  variants: MarketerProductVariant[];
+  viewCount: number;
+  createdAt: string | null;
+};
+
 export type MarketerCategory = {
   id: string;
   name: string;
