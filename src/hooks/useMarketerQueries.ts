@@ -178,10 +178,21 @@ export function useUpdateReferral() {
     mutationFn: ({
       referralId,
       status,
+      formAuthentication,
+      showAddressFields,
     }: {
       referralId: string;
-      status: ReferralStatus;
-    }) => marketerApi.updateReferral(referralId, { status }),
+      status?: ReferralStatus;
+      formAuthentication?: "otp" | "none";
+      showAddressFields?: boolean;
+    }) =>
+      marketerApi.updateReferral(referralId, {
+        ...(status ? { status } : {}),
+        ...(formAuthentication ? { formAuthentication } : {}),
+        ...(typeof showAddressFields === "boolean"
+          ? { showAddressFields }
+          : {}),
+      }),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: marketerKeys.referralsRoot,

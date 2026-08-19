@@ -12,7 +12,12 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useUpdateReferral } from "@/src/hooks/useMarketerQueries";
-import { formatCompact, formatDate, formatMoney, formatPercent } from "@/src/lib/format";
+import {
+  formatCompact,
+  formatDate,
+  formatMoney,
+  formatPercent,
+} from "@/src/lib/format";
 import type { MarketerReferral } from "@/src/types/marketer";
 import { useTelegram } from "@/src/telegram/TelegramProvider";
 import { ProductImage } from "@/src/components/ui/ProductImage";
@@ -64,7 +69,7 @@ export function ReferralCard({
           <ProductImage
             src={referral.product.thumbnailUrl}
             alt={referral.product.nameUz}
-            className="h-[76px] w-[58px] shrink-0 rounded-[13px] border border-[var(--line)] bg-[var(--surface-muted)]"
+            className="h-[76px] w-[58px] shrink-0 rounded-[6px] border border-[var(--line)] bg-[var(--surface-muted)]"
             sizes="58px"
           />
           <div className="min-w-0 flex-1">
@@ -94,10 +99,22 @@ export function ReferralCard({
               <span className="text-[var(--line-strong)]">•</span>
               <span>{formatDate(referral.createdAt)}</span>
             </div>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              <span className="border border-[var(--line)] bg-[var(--surface-muted)] px-1.5 py-0.5 text-[9px] font-bold text-[var(--muted)]">
+                {referral.formAuthentication === "otp"
+                  ? "SMS tasdiqli"
+                  : "SMSsiz"}
+              </span>
+              <span className="border border-[var(--line)] bg-[var(--surface-muted)] px-1.5 py-0.5 text-[9px] font-bold text-[var(--muted)]">
+                {referral.showAddressFields
+                  ? "Manzil va yetkazish bor"
+                  : "Faqat ism va telefon"}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="mt-3 grid grid-cols-[1fr_auto] items-end gap-3 rounded-[13px] border border-[var(--line)] bg-[var(--surface-raised)] px-3 py-2.5">
+        <div className="mt-3 grid grid-cols-[1fr_auto] items-end gap-3 rounded-[6px] border border-[var(--line)] bg-[var(--surface-raised)] px-3 py-2.5">
           <div>
             <p className="text-[10px] font-bold text-[var(--muted)]">
               Topilgan foyda

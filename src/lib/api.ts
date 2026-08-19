@@ -195,7 +195,12 @@ export const marketerApi = {
 
   updateReferral: (
     referralId: string,
-    payload: { name?: string; status?: ReferralStatus },
+    payload: {
+      name?: string;
+      status?: ReferralStatus;
+      formAuthentication?: "otp" | "none";
+      showAddressFields?: boolean;
+    },
   ) =>
     request<MarketerReferral>({
       url: `/api/v1/marketer/referrals/${encodeURIComponent(referralId)}`,

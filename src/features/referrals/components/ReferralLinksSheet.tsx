@@ -1,8 +1,21 @@
 "use client";
 
-import { AlertCircle, Check, Copy, Globe2, Link2, Workflow } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Copy,
+  Globe2,
+  Link2,
+  MapPin,
+  MessageSquareLock,
+  Workflow,
+} from "lucide-react";
+import { clsx } from "clsx";
 import { useState } from "react";
-import { useEnsureReferralStreamLink } from "@/src/hooks/useMarketerQueries";
+import {
+  useEnsureReferralStreamLink,
+  useUpdateReferral,
+} from "@/src/hooks/useMarketerQueries";
 import { apiErrorMessage } from "@/src/lib/api";
 import { formatMoney } from "@/src/lib/format";
 import type { MarketerReferral } from "@/src/types/marketer";
@@ -47,10 +60,17 @@ export function ReferralLinksSheet({
   onClose: () => void;
 }) {
   const ensureStream = useEnsureReferralStreamLink();
+  const updateReferral = useUpdateReferral();
   const { haptic } = useTelegram();
+  const [current, setCurrent] = useState(referral);
+  const [formAuthentication, setFormAuthentication] = useState<"otp" | "none">(
+    referral.formAuthentication,
+  );
+  const [showAddressFields, setShowAddressFields] = useState(
+    referral.showAddressFields,
+  );
   const [copied, setCopied] = useState<LinkKind | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
-  const current = ensureStream.data ?? referral;
   const linksDisabled = current.status !== "active";
   const streamLink = current.links.stream ?? current.links.form ?? null;
   const rows: Array<{
@@ -108,7 +128,7 @@ export function ReferralLinksSheet({
       title="Referal havolalari"
       description="Kerakli kanalni tanlang. Har bir havola shu referal statistikasi bilan kuzatiladi."
     >
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--line)]">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[7px] border border-[var(--line)] bg-[var(--line)]">
         <div className="bg-[var(--surface-raised)] p-3">
           <p className="text-[10px] font-bold text-[var(--muted)]">
             Topilgan foyda
@@ -127,13 +147,113 @@ export function ReferralLinksSheet({
         </div>
       </div>
 
+      <section className="mt-3 overflow-hidden rounded-[7px] border border-[var(--line)] bg-[var(--surface)]">
+        <div className="border-b border-[var(--line)] bg-[var(--surface-muted)] px-3 py-2.5">
+          <p className="text-[11px] font-extrabold text-[var(--ink)]">
+            Oqim formasi tafsilotlari
+          </p>
+          <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--muted)]">
+            Saqlanganda mavjud oqim sahifasi ham darhol yangilanadi.
+          </p>
+        </div>
+        <div className="divide-y divide-[var(--line)]">
+          <div className="p-3">
+            <div className="flex items-center gap-2 text-[10px] font-extrabold text-[var(--ink)]">
+              <MessageSquareLock className="h-4 w-4 text-[var(--muted)]" />
+              SMS tasdiqlash
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {(
+                [
+                  ["otp", "SMS bilan"],
+                  ["none", "SMSsiz"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={formAuthentication === value}
+                  onClick={() => setFormAuthentication(value)}
+                  className={clsx(
+                    "min-h-9 rounded-[5px] border px-2 text-[10px] font-extrabold",
+                    formAuthentication === value
+                      ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
+                      : "border-[var(--line)] text-[var(--muted)]",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="p-3">
+            <div className="flex items-center gap-2 text-[10px] font-extrabold text-[var(--ink)]">
+              <MapPin className="h-4 w-4 text-[var(--muted)]" />
+              Manzil va yetkazish tanlovi
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {(
+                [
+                  [true, "Ko'rsatish"],
+                  [false, "Yashirish"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={String(value)}
+                  type="button"
+                  aria-pressed={showAddressFields === value}
+                  onClick={() => setShowAddressFields(value)}
+                  className={clsx(
+                    "min-h-9 rounded-[5px] border px-2 text-[10px] font-extrabold",
+                    showAddressFields === value
+                      ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
+                      : "border-[var(--line)] text-[var(--muted)]",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-[var(--line)] p-2.5">
+          <Button
+            variant="secondary"
+            className="min-h-10 w-full rounded-[6px] text-[11px]"
+            loading={updateReferral.isPending}
+            disabled={
+              formAuthentication === current.formAuthentication &&
+              showAddressFields === current.showAddressFields
+            }
+            onClick={() =>
+              updateReferral.mutate(
+                {
+                  referralId: current.id,
+                  formAuthentication,
+                  showAddressFields,
+                },
+                {
+                  onSuccess: (updated) => {
+                    setCurrent(updated);
+                    haptic("success");
+                  },
+                  onError: () => haptic("error"),
+                },
+              )
+            }
+          >
+            Oqim sozlamalarini saqlash
+          </Button>
+        </div>
+      </section>
+
       <div className="mt-3 space-y-2">
         {rows.map((row) => {
           const Icon = row.icon;
           return (
             <div
               key={row.kind}
-              className="flex min-w-0 items-center gap-3 rounded-[14px] border border-[var(--line)] bg-[var(--surface)] p-3"
+              className="flex min-w-0 items-center gap-3 rounded-[7px] border border-[var(--line)] bg-[var(--surface)] p-3"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-[var(--surface-muted)] text-[var(--ink)]">
                 <Icon className="h-[18px] w-[18px]" />
@@ -171,7 +291,10 @@ export function ReferralLinksSheet({
                   loading={ensureStream.isPending}
                   onClick={() =>
                     ensureStream.mutate(current.id, {
-                      onSuccess: () => haptic("success"),
+                      onSuccess: (updated) => {
+                        setCurrent(updated);
+                        haptic("success");
+                      },
                       onError: () => haptic("error"),
                     })
                   }
@@ -184,11 +307,11 @@ export function ReferralLinksSheet({
         })}
       </div>
 
-      {(copyError || ensureStream.isError) && (
+      {(copyError || ensureStream.isError || updateReferral.isError) && (
         <p className="mt-3 rounded-[12px] border border-[var(--danger-line)] bg-[var(--danger-soft)] px-3 py-2.5 text-xs font-semibold text-[var(--danger)]">
           {copyError ??
             apiErrorMessage(
-              ensureStream.error,
+              ensureStream.error ?? updateReferral.error,
               "Oqim havolasini tayyorlab bo'lmadi",
             )}
         </p>

@@ -79,7 +79,11 @@ body {
   background: linear-gradient(180deg, #fafcfa 0, var(--canvas) 18rem);
   color: var(--ink);
   font-family:
-    Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   font-feature-settings:
     "cv02" 1,
@@ -184,7 +188,7 @@ button:disabled {
   align-items: center;
   gap: 0.5rem;
   border: 1px solid var(--line-strong);
-  border-radius: 0.875rem;
+  border-radius: 0.5rem;
   background: var(--surface);
   padding: 0 0.75rem;
 }

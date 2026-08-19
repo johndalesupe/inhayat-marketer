@@ -18,15 +18,12 @@ import {
 } from "react";
 import { clsx } from "clsx";
 
-export function Panel({
-  className,
-  ...props
-}: HTMLAttributes<HTMLElement>) {
+export function Panel({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return (
     <section
       {...props}
       className={clsx(
-        "rounded-[18px] border border-[var(--line)] bg-[var(--surface)]",
+        "rounded-[8px] border border-[var(--line)] bg-[var(--surface)]",
         className,
       )}
     />
@@ -59,7 +56,7 @@ export function Button({
       {...props}
       disabled={props.disabled || loading}
       className={clsx(
-        "inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[14px] border px-4 text-sm font-bold transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[8px] border px-4 text-sm font-bold transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],
         className,
       )}
@@ -84,7 +81,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={clsx(
-        "inline-flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[14px] border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] transition duration-150 hover:border-[var(--line-strong)] hover:bg-[var(--surface-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-95 disabled:opacity-50",
+        "inline-flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[8px] border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] transition duration-150 hover:border-[var(--line-strong)] hover:bg-[var(--surface-raised)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-95 disabled:opacity-50",
         className,
       )}
     >
@@ -161,7 +158,8 @@ export function StatusChip({
   tone?: "brand" | "neutral" | "warning" | "danger" | "success";
 }) {
   const tones = {
-    brand: "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]",
+    brand:
+      "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]",
     neutral:
       "border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]",
     warning:
@@ -174,7 +172,7 @@ export function StatusChip({
   return (
     <span
       className={clsx(
-        "inline-flex min-h-6 items-center rounded-full border px-2.5 text-[10px] font-bold",
+        "inline-flex min-h-6 items-center rounded-[5px] border px-2.5 text-[10px] font-bold",
         tones[tone],
       )}
     >
@@ -226,7 +224,7 @@ export function EmptyState({
 }) {
   return (
     <Panel className="px-5 py-8 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[15px] border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--ink)]">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[8px] border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--ink)]">
         <Icon className="h-5 w-5" />
       </div>
       <h3 className="mt-3 text-base font-extrabold tracking-[-0.015em] text-[var(--ink)]">
@@ -257,11 +255,7 @@ export function ErrorState({
         {description}
       </p>
       {retry && (
-        <Button
-          variant="secondary"
-          className="mt-4 min-h-10"
-          onClick={retry}
-        >
+        <Button variant="secondary" className="mt-4 min-h-10" onClick={retry}>
           <RotateCcw className="h-4 w-4" />
           Qayta urinish
         </Button>
@@ -299,7 +293,8 @@ export function BottomSheet({
     const previousOverflow = document.body.style.overflow;
     const previousOverscroll = document.body.style.overscrollBehavior;
     const previousPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
 
     document.body.style.overflow = "hidden";
     document.body.style.overscrollBehavior = "none";
@@ -389,7 +384,7 @@ export function BottomSheet({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className="sheet-enter flex max-h-[calc(100dvh-var(--app-safe-top)-8px)] w-full max-w-[560px] flex-col overflow-hidden rounded-t-[26px] border-x border-t border-[var(--line)] bg-[var(--surface)] outline-none"
+        className="sheet-enter flex max-h-[calc(100dvh-var(--app-safe-top)-8px)] w-full max-w-[560px] flex-col overflow-hidden rounded-t-[14px] border-x border-t border-[var(--line)] bg-[var(--surface)] outline-none"
       >
         <div className="shrink-0 px-4 pt-2">
           <div className="mx-auto h-1 w-10 rounded-full bg-[var(--line-strong)]" />
@@ -438,4 +433,4 @@ export function FieldError({ message }: { message?: string }) {
 }
 
 export const inputClass =
-  "h-[46px] w-full rounded-[14px] border border-[var(--line-strong)] bg-[var(--surface)] px-3 text-base font-semibold text-[var(--ink)] outline-none transition placeholder:font-medium placeholder:text-[var(--muted-light)] focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand-ring)]";
+  "h-[46px] w-full rounded-[8px] border border-[var(--line-strong)] bg-[var(--surface)] px-3 text-base font-semibold text-[var(--ink)] outline-none transition placeholder:font-medium placeholder:text-[var(--muted-light)] focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand-ring)]";

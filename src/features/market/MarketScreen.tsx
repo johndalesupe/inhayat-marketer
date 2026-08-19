@@ -107,7 +107,7 @@ function ProductArtwork({
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-1.5 p-2">
         <div className="flex min-w-0 flex-wrap gap-1">
           {product.isTop && (
-            <span className="inline-flex h-6 items-center gap-1 rounded-full border border-white/70 bg-white/95 px-2 text-[10px] font-black tracking-[0.04em] text-[var(--ink)] backdrop-blur-sm">
+            <span className="inline-flex h-6 items-center gap-1 rounded-[4px] border border-white/70 bg-white/95 px-2 text-[10px] font-black tracking-[0.04em] text-[var(--ink)] backdrop-blur-sm">
               <Trophy className="h-3 w-3" />
               TOP
             </span>
@@ -116,7 +116,7 @@ function ProductArtwork({
         {selectionMode && (
           <span
             className={clsx(
-              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border backdrop-blur-sm transition",
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-[5px] border backdrop-blur-sm transition",
               selected
                 ? "border-[var(--brand)] bg-[var(--brand)] text-white"
                 : "border-white/80 bg-white/95 text-[var(--muted)]",
@@ -132,14 +132,14 @@ function ProductArtwork({
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 bg-gradient-to-t from-black/45 via-black/10 to-transparent p-2 pt-8">
         {product.categoryName ? (
-          <span className="min-w-0 truncate rounded-full border border-white/40 bg-white/92 px-2 py-1 text-[10px] font-bold text-[var(--ink)] backdrop-blur-sm">
+          <span className="min-w-0 truncate rounded-[4px] border border-white/40 bg-white/92 px-2 py-1 text-[10px] font-bold text-[var(--ink)] backdrop-blur-sm">
             {product.categoryName}
           </span>
         ) : (
           <span />
         )}
         {!product.isAvailable && (
-          <span className="shrink-0 rounded-full bg-black/78 px-2 py-1 text-[10px] font-bold text-white">
+          <span className="shrink-0 rounded-[4px] bg-black/78 px-2 py-1 text-[10px] font-bold text-white">
             Mavjud emas
           </span>
         )}
@@ -172,7 +172,7 @@ function ProductCard({
   return (
     <article
       className={clsx(
-        "min-w-0 overflow-hidden rounded-[16px] border bg-[var(--surface)] transition duration-150",
+        "min-w-0 overflow-hidden rounded-[7px] border bg-[var(--surface)] transition duration-150",
         selectionMode && selected
           ? "border-[var(--brand)] ring-2 ring-[var(--brand-ring)]"
           : "border-[var(--line-strong)]",
@@ -188,11 +188,7 @@ function ProductCard({
             selected ? "tanlovdan chiqarish" : "tanlash"
           }`}
         >
-          <ProductArtwork
-            product={product}
-            selectionMode
-            selected={selected}
-          />
+          <ProductArtwork product={product} selectionMode selected={selected} />
         </button>
       ) : (
         <Link
@@ -244,8 +240,8 @@ function ProductCard({
           )}
         </div>
 
-        <div className="mt-2 flex min-h-11 items-center gap-2 rounded-[11px] border border-[var(--brand-line)] bg-[var(--brand-soft)] px-2.5 py-2">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--surface)] text-[var(--brand)]">
+        <div className="mt-2 flex min-h-11 items-center gap-2 rounded-[6px] border border-[var(--brand-line)] bg-[var(--brand-soft)] px-2.5 py-2">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[4px] bg-[var(--surface)] text-[var(--brand)]">
             <WalletCards className="h-3.5 w-3.5" />
           </span>
           <div className="min-w-0">
@@ -262,7 +258,7 @@ function ProductCard({
           <Button
             variant="secondary"
             className={clsx(
-              "mt-2 min-h-11 w-full rounded-[10px] px-2 text-xs font-extrabold",
+              "mt-2 min-h-11 w-full rounded-[6px] px-2 text-xs font-extrabold",
               selected &&
                 "border-[var(--brand-line)] bg-[var(--brand-soft)] text-[var(--brand)]",
             )}
@@ -282,12 +278,12 @@ function ProductCard({
               href={`/market/products/${product.id}`}
               prefetch={false}
               aria-label={`${product.nameUz} tafsilotlarini ko'rish`}
-              className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-95"
+              className="inline-flex h-11 items-center justify-center rounded-[6px] border border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-95"
             >
               <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Button
-              className="min-h-11 rounded-[10px] px-2 text-[11px] font-extrabold"
+              className="min-h-11 rounded-[6px] px-2 text-[11px] font-extrabold"
               disabled={selectionDisabled}
               onClick={() => onCreate(product)}
             >
@@ -307,11 +303,11 @@ function ProductCard({
 
 function ProductGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-1.5 px-1">
+    <div className="grid grid-cols-1 gap-2 px-1">
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="overflow-hidden rounded-[16px] border border-[var(--line-strong)] bg-[var(--surface)]"
+          className="overflow-hidden rounded-[7px] border border-[var(--line-strong)] bg-[var(--surface)]"
         >
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
           <div className="space-y-1.5 p-2.5">
@@ -425,33 +421,35 @@ function RankingStrip({
         aria-label="Mahsulotlarni saralash"
         className="flex gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {MARKET_SORTS.map(({ value: option, label, shortLabel, icon: Icon }) => {
-          const active = option === value;
-          return (
-            <button
-              key={option}
-              type="button"
-              aria-label={label}
-              title={label}
-              aria-pressed={active}
-              onClick={() => onChange(option)}
-              className={clsx(
-                "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[11px] border px-3 text-[11px] font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-[0.98]",
-                active
-                  ? "border-[var(--brand)] bg-[var(--brand)] text-white"
-                  : "border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)]",
-              )}
-            >
-              <Icon
+        {MARKET_SORTS.map(
+          ({ value: option, label, shortLabel, icon: Icon }) => {
+            const active = option === value;
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-label={label}
+                title={label}
+                aria-pressed={active}
+                onClick={() => onChange(option)}
                 className={clsx(
-                  "h-3.5 w-3.5",
-                  !active && "text-[var(--muted)]",
+                  "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[11px] border px-3 text-[11px] font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)] active:scale-[0.98]",
+                  active
+                    ? "border-[var(--brand)] bg-[var(--brand)] text-white"
+                    : "border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)]",
                 )}
-              />
-              {shortLabel}
-            </button>
-          );
-        })}
+              >
+                <Icon
+                  className={clsx(
+                    "h-3.5 w-3.5",
+                    !active && "text-[var(--muted)]",
+                  )}
+                />
+                {shortLabel}
+              </button>
+            );
+          },
+        )}
       </nav>
     </div>
   );
@@ -533,7 +531,7 @@ function BulkPublishSheet({
                 ? "border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger)]"
                 : partial
                   ? "border-[var(--warning-line)] bg-[var(--warning-soft)] text-[var(--warning)]"
-                : "border-[var(--success-line)] bg-[var(--success-soft)] text-[var(--success)]",
+                  : "border-[var(--success-line)] bg-[var(--success-soft)] text-[var(--success)]",
             )}
           >
             {failed ? (
@@ -549,9 +547,9 @@ function BulkPublishSheet({
               ? "Yuborish yakunlanmadi"
               : partial
                 ? "Postlar qisman yuborildi"
-              : terminal
-                ? "Postlar yuborildi"
-                : "Postlar tayyorlanmoqda"}
+                : terminal
+                  ? "Postlar yuborildi"
+                  : "Postlar tayyorlanmoqda"}
           </h3>
           <p className="mt-1 text-xs font-semibold leading-5 text-[var(--muted)]">
             {mutation.data.created.createdCount > 0 &&
@@ -780,21 +778,18 @@ function BulkPublishSheet({
                   publishIdempotencyKey: string;
                 });
               if (!submittedPayload) setSubmittedPayload(payload);
-              mutation.mutate(
-                payload,
-                {
-                  onSuccess: () => haptic("success"),
-                  onError: () => haptic("error"),
-                },
-              );
+              mutation.mutate(payload, {
+                onSuccess: () => haptic("success"),
+                onError: () => haptic("error"),
+              });
             }}
           >
             <Send className="h-4 w-4" />
             {mutation.isError
               ? "Xavfsiz qayta urinish"
               : selectedChatIds.length
-              ? `${selectionCount} ta referalni ${selectedChatIds.length} ta chatga yuborish`
-              : "Chatlarni tanlang"}
+                ? `${selectionCount} ta referalni ${selectedChatIds.length} ta chatga yuborish`
+                : "Chatlarni tanlang"}
           </Button>
         </>
       )}
@@ -1058,7 +1053,7 @@ export function MarketScreen() {
             />
           ) : products.length ? (
             <>
-              <div className="grid grid-cols-2 gap-1.5 px-1">
+              <div className="grid grid-cols-1 gap-2 px-1">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}

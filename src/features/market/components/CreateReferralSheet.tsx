@@ -7,7 +7,9 @@ import {
   Clipboard,
   Globe2,
   Link2,
+  MapPin,
   MessageCircleMore,
+  MessageSquareLock,
   Send,
   ShieldCheck,
   Sparkles,
@@ -27,16 +29,10 @@ import {
   useCreateReferral,
   useEnsureReferralStreamLink,
 } from "@/src/hooks/useMarketerQueries";
-import {
-  apiErrorMessage,
-  createIdempotencyKey,
-} from "@/src/lib/api";
+import { apiErrorMessage, createIdempotencyKey } from "@/src/lib/api";
 import { formatMoney } from "@/src/lib/format";
 import { useTelegram } from "@/src/telegram/TelegramProvider";
-import type {
-  MarketerProduct,
-  MarketerReferral,
-} from "@/src/types/marketer";
+import type { MarketerProduct, MarketerReferral } from "@/src/types/marketer";
 
 const schema = yup.object({
   name: yup
@@ -111,6 +107,10 @@ export function CreateReferralSheet({
     control: form.control,
     name: "formAuthentication",
   });
+  const showAddressFields = useWatch({
+    control: form.control,
+    name: "showAddressFields",
+  });
 
   const links = useMemo(() => {
     if (!referral) return [];
@@ -175,11 +175,11 @@ export function CreateReferralSheet({
     >
       {!referral ? (
         <>
-          <div className="flex items-center gap-3 rounded-[16px] border border-[var(--line)] bg-[var(--surface-raised)] p-3">
+          <div className="flex items-center gap-3 rounded-[8px] border border-[var(--line)] bg-[var(--surface-raised)] p-3">
             <ProductImage
               src={product.thumbnailUrl}
               alt={product.nameUz}
-              className="h-[72px] w-14 shrink-0 rounded-xl border border-[var(--line)]"
+              className="h-[72px] w-14 shrink-0 rounded-[6px] border border-[var(--line)]"
               sizes="56px"
             />
             <div className="min-w-0 flex-1">
@@ -238,18 +238,20 @@ export function CreateReferralSheet({
                 Asosiy havola
               </legend>
               <div className="grid grid-cols-3 gap-2">
-                {([
-                  ["miniapp", "Mini App", Send],
-                  ["web", "Web sayt", Globe2],
-                  ["form", "Tezkor", Workflow],
-                ] as const).map(([value, label, Icon]) => (
+                {(
+                  [
+                    ["miniapp", "Mini App", Send],
+                    ["web", "Web sayt", Globe2],
+                    ["form", "Tezkor", Workflow],
+                  ] as const
+                ).map(([value, label, Icon]) => (
                   <button
                     key={value}
                     type="button"
                     aria-pressed={destination === value}
                     onClick={() => form.setValue("destination", value)}
                     className={clsx(
-                      "flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-[13px] border px-2 text-[10px] font-extrabold transition",
+                      "flex min-h-[66px] flex-col items-center justify-center gap-1.5 rounded-[7px] border px-2 text-[10px] font-extrabold transition",
                       destination === value
                         ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
                         : "border-[var(--line)] bg-[var(--surface)] text-[var(--muted)]",
@@ -262,28 +264,53 @@ export function CreateReferralSheet({
               </div>
             </fieldset>
 
-            {destination === "form" && (
-              <div className="mt-3 rounded-[14px] border border-[var(--line)] bg-[var(--surface-muted)] p-3">
-                <p className="flex items-center gap-2 text-[11px] font-extrabold text-[var(--ink)]">
-                  <ShieldCheck className="h-4 w-4 text-[var(--muted)]" />
-                  Tezkor forma sozlamalari
-                </p>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  {([
-                    ["otp", "SMS tasdiq bilan"],
-                    ["none", "Tasdiqsiz"],
-                  ] as const).map(([value, label]) => (
+            <fieldset className="mt-3 overflow-hidden rounded-[8px] border border-[var(--line)] bg-[var(--surface)]">
+              <legend className="sr-only">Oqim formasi sozlamalari</legend>
+              <div className="flex items-start gap-2.5 border-b border-[var(--line)] bg-[var(--surface-muted)] p-3">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand)]" />
+                <div>
+                  <p className="text-[11px] font-extrabold text-[var(--ink)]">
+                    Oqim formasi
+                  </p>
+                  <p className="mt-0.5 text-[9px] font-medium leading-4 text-[var(--muted)]">
+                    Bu sozlamalar Oqim havolasida darhol qo&apos;llanadi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-3">
+                <div className="flex items-start gap-2.5">
+                  <MessageSquareLock className="mt-0.5 h-4 w-4 shrink-0 text-[var(--muted)]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-extrabold text-[var(--ink)]">
+                      Telefonni tasdiqlash
+                    </p>
+                    <p className="mt-0.5 text-[9px] leading-4 text-[var(--muted)]">
+                      SMS yoqilsa, buyurtma faqat 6 xonali koddan keyin
+                      tasdiqlanadi.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                  {(
+                    [
+                      ["otp", "SMS bilan"],
+                      ["none", "SMSsiz"],
+                    ] as const
+                  ).map(([value, label]) => (
                     <button
                       key={value}
                       type="button"
                       aria-pressed={authentication === value}
                       onClick={() =>
-                        form.setValue("formAuthentication", value)
+                        form.setValue("formAuthentication", value, {
+                          shouldDirty: true,
+                        })
                       }
                       className={clsx(
-                        "min-h-10 rounded-xl border px-2 text-[10px] font-bold",
+                        "min-h-10 rounded-[6px] border px-2 text-[10px] font-extrabold transition",
                         authentication === value
-                          ? "border-[var(--brand)] bg-[var(--surface)] text-[var(--brand)]"
+                          ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
                           : "border-[var(--line)] text-[var(--muted)]",
                       )}
                     >
@@ -291,24 +318,50 @@ export function CreateReferralSheet({
                     </button>
                   ))}
                 </div>
-                <label className="mt-2 flex items-start gap-2.5 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3">
-                  <input
-                    type="checkbox"
-                    {...form.register("showAddressFields")}
-                    className="mt-0.5 h-4 w-4 accent-[var(--brand)]"
-                  />
-                  <span>
-                    <span className="block text-[11px] font-bold text-[var(--ink)]">
-                      Manzil maydonini ko&apos;rsatish
-                    </span>
-                    <span className="mt-0.5 block text-[9px] leading-4 text-[var(--muted)]">
-                      O&apos;chirilsa, ism va telefon raqami yetarli
-                      bo&apos;ladi.
-                    </span>
-                  </span>
-                </label>
               </div>
-            )}
+
+              <div className="border-t border-[var(--line)] p-3">
+                <div className="flex items-start gap-2.5">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--muted)]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-extrabold text-[var(--ink)]">
+                      Manzil va yetkazish tanlovi
+                    </p>
+                    <p className="mt-0.5 text-[9px] leading-4 text-[var(--muted)]">
+                      O&apos;chirilsa, manzil, hudud va yetkazish usuli umuman
+                      ko&apos;rinmaydi.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                  {(
+                    [
+                      [true, "Ko'rsatish"],
+                      [false, "Yashirish"],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={String(value)}
+                      type="button"
+                      aria-pressed={showAddressFields === value}
+                      onClick={() =>
+                        form.setValue("showAddressFields", value, {
+                          shouldDirty: true,
+                        })
+                      }
+                      className={clsx(
+                        "min-h-10 rounded-[6px] border px-2 text-[10px] font-extrabold transition",
+                        showAddressFields === value
+                          ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]"
+                          : "border-[var(--line)] text-[var(--muted)]",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </fieldset>
 
             {createMutation.isError && (
               <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
@@ -464,11 +517,7 @@ export function CreateReferralSheet({
               Ulashish
             </Button>
           </div>
-          <Button
-            variant="ghost"
-            className="mt-2 w-full"
-            onClick={close}
-          >
+          <Button variant="ghost" className="mt-2 w-full" onClick={close}>
             Tayyor
           </Button>
         </div>

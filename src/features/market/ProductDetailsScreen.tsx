@@ -131,31 +131,38 @@ export function ProductDetailsScreen({ productId }: { productId: string }) {
 
   return (
     <div className="space-y-3">
-      <header className="flex items-center justify-between gap-3 px-0.5">
-        <IconButton label="Orqaga" onClick={() => router.back()}>
-          <ArrowLeft className="h-5 w-5" />
-        </IconButton>
-        <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 text-[10px] font-extrabold text-[var(--muted)]">
-          <Hash className="h-3.5 w-3.5" />
-          {product.numericId}
-        </span>
-        <IconButton
-          label="Referal orqali ulashish"
-          disabled={!canCreate}
-          onClick={() => {
-            setReferralOpen(true);
-            haptic("light");
-          }}
-        >
-          <Share2 className="h-5 w-5" />
-        </IconButton>
-      </header>
-
-      <ProductMediaCarousel
-        images={product.images ?? []}
-        thumbnailUrl={product.thumbnailUrl}
-        title={display.title}
-      />
+      <div className="relative">
+        <ProductMediaCarousel
+          images={product.images ?? []}
+          thumbnailUrl={product.thumbnailUrl}
+          videoUrl={product.videoUrl}
+          title={display.title}
+        />
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-20 -mx-3 flex items-center justify-between gap-3 px-3 pt-3">
+          <IconButton
+            label="Orqaga"
+            onClick={() => router.back()}
+            className="pointer-events-auto h-10 w-10 rounded-[6px] border-white/70 bg-white/90 backdrop-blur"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </IconButton>
+          <span className="inline-flex min-h-8 items-center gap-1.5 border border-white/70 bg-white/90 px-2.5 text-[10px] font-extrabold text-[var(--ink)] backdrop-blur">
+            <Hash className="h-3.5 w-3.5" />
+            {product.numericId}
+          </span>
+          <IconButton
+            label="Referal orqali ulashish"
+            disabled={!canCreate}
+            onClick={() => {
+              setReferralOpen(true);
+              haptic("light");
+            }}
+            className="pointer-events-auto h-10 w-10 rounded-[6px] border-white/70 bg-white/90 backdrop-blur"
+          >
+            <Share2 className="h-5 w-5" />
+          </IconButton>
+        </header>
+      </div>
 
       <Panel className="p-4">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -195,7 +202,7 @@ export function ProductDetailsScreen({ productId }: { productId: string }) {
               </div>
             )}
           </div>
-          <div className="shrink-0 rounded-[14px] border border-[var(--brand-line)] bg-[var(--brand-soft)] px-3 py-2.5 text-right">
+          <div className="shrink-0 rounded-[6px] border border-[var(--brand-line)] bg-[var(--brand-soft)] px-3 py-2.5 text-right">
             <p className="text-[9px] font-bold text-[var(--muted)]">
               Kutilayotgan foyda
             </p>
