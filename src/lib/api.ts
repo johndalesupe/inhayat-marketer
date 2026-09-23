@@ -216,7 +216,7 @@ export const marketerApi = {
 
   publishReferral: (
     referralId: string,
-    payload: { chatIds: string[]; language: "uz" | "ru" },
+    payload: { chatIds: string[]; idempotencyKey: string },
   ) =>
     request<{ queued: number; jobId?: string }>({
       url: `/api/v1/marketer/referrals/${encodeURIComponent(referralId)}/publish`,

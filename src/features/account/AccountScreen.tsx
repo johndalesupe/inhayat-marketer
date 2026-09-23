@@ -49,7 +49,7 @@ const otpSchema = yup.object({
   code: yup
     .string()
     .required("Tasdiqlash kodini kiriting")
-    .matches(/^\d{4,8}$/, "Kod 4–8 ta raqamdan iborat"),
+    .matches(/^\d{6}$/, "Kod 6 ta raqamdan iborat"),
 });
 type PhoneForm = yup.InferType<typeof phoneSchema>;
 type OtpForm = yup.InferType<typeof otpSchema>;
@@ -99,6 +99,8 @@ function PhoneVerificationSheet({
       setSubmittedPhoneNumber(submittedPhone);
       setPhoneDisplay(maskedPhone(response.phoneNumber || submittedPhone));
       setResendIn(response.resendAfterSeconds);
+      otpForm.reset({ code: "" });
+      verifyOtp.reset();
       setPhase("otp");
       haptic("success");
     },
@@ -110,6 +112,7 @@ function PhoneVerificationSheet({
     onSuccess: (profile) => {
       dispatch(setProfile(profile));
       queryClient.setQueryData(marketerKeys.profile, profile);
+      void queryClient.invalidateQueries({ queryKey: marketerKeys.wallet });
       setPhase("done");
       haptic("success");
     },
@@ -243,6 +246,11 @@ function PhoneVerificationSheet({
               {apiErrorMessage(verifyOtp.error, "Kod tasdiqlanmadi")}
             </p>
           )}
+          {requestOtp.isError && (
+            <p role="alert" className="mt-3 rounded-lg border border-[var(--danger-line)] bg-[var(--danger-soft)] p-2.5 text-xs font-semibold text-[var(--danger)]">
+              {apiErrorMessage(requestOtp.error, "SMS kod qayta yuborilmadi")}
+            </p>
+          )}
           <Button
             type="submit"
             className="mt-4 w-full"
@@ -253,13 +261,21 @@ function PhoneVerificationSheet({
           </Button>
           <button
             type="button"
-            disabled={resendIn > 0 || requestOtp.isPending}
+            disabled={resendIn > 0 || requestOtp.isPending || verifyOtp.isPending}
             onClick={() => requestOtp.mutate(submittedPhoneNumber)}
             className="mt-2 h-10 w-full text-xs font-extrabold text-[var(--brand)] disabled:text-[var(--muted)]"
           >
             {resendIn > 0
               ? `Qayta yuborish ${resendIn} soniyadan keyin`
               : "Kodni qayta yuborish"}
+          </button>
+          <button
+            type="button"
+            disabled={requestOtp.isPending || verifyOtp.isPending}
+            onClick={() => { setPhase("phone"); requestOtp.reset(); verifyOtp.reset(); }}
+            className="h-10 w-full text-xs font-semibold text-[var(--muted)]"
+          >
+            Telefon raqamini o&apos;zgartirish
           </button>
         </form>
       )}

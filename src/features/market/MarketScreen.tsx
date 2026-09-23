@@ -23,7 +23,7 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { ProductImage } from "@/src/components/ui/ProductImage";
 import {
   BottomSheet,
@@ -477,6 +477,7 @@ function BulkPublishSheet({
   );
   const { haptic } = useTelegram();
   const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
+  const sending = useRef(false);
   const [namePrefix, setNamePrefix] = useState("");
   const [submittedPayload, setSubmittedPayload] = useState<
     | (BulkReferralSelection & {
@@ -493,7 +494,12 @@ function BulkPublishSheet({
   );
   const selectedAll =
     publishable.length > 0 &&
-    publishable.every((chat) => selectedChatIds.includes(chat.chatId));
+    publishable
+      .slice(0, 25)
+      .every((chat) => selectedChatIds.includes(chat.chatId));
+  const eligibleChatIds = selectedChatIds.filter((id) =>
+    publishable.some((chat) => chat.chatId === id),
+  );
   const prefixInvalid =
     namePrefix.trim().length > 0 && namePrefix.trim().length < 2;
   const batch = batchQuery.data;
@@ -506,7 +512,7 @@ function BulkPublishSheet({
   const formLocked = mutation.isPending || submittedPayload !== null;
 
   const close = () => {
-    if (mutation.isPending) return;
+    if (sending.current) return;
     if (mutation.isSuccess) onComplete();
     onClose();
   };
@@ -629,11 +635,12 @@ function BulkPublishSheet({
             </span>
             <div className="min-w-0">
               <p className="text-xs font-extrabold text-[var(--ink)]">
-                Galereya avval, ma&apos;lumot keyin
+                Har bir mahsulot — bitta ikki tilli post
               </p>
               <p className="mt-1 text-[10px] font-semibold leading-4 text-[var(--muted)]">
-                Rasm va videolar galereya bo&apos;lib, so&apos;ng o&apos;zbek va
-                rus tilidagi nom, narx hamda toifa heshtegi yuboriladi.
+                Rasm yoki video, o&apos;zbekcha va ruscha matn hamda ikkala
+                buyurtma tugmasi bitta postda yuboriladi. Har bir tugmada
+                sizning referal havolangiz bo&apos;ladi.
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <span className="rounded-lg bg-[var(--success)] px-2 py-1 text-[9px] font-extrabold text-white">
@@ -675,7 +682,8 @@ function BulkPublishSheet({
                 Kanal va guruhlar
               </p>
               <p className="mt-0.5 text-[10px] font-semibold text-[var(--muted)]">
-                {selectedChatIds.length}/{publishable.length} ta tanlandi
+                {eligibleChatIds.length}/{publishable.length} ta tanlandi ·
+                Ko&apos;pi bilan 25 ta
               </p>
             </div>
             <button
@@ -684,11 +692,17 @@ function BulkPublishSheet({
               className="min-h-8 rounded-lg px-2 text-[10px] font-extrabold text-[var(--brand)] active:bg-[var(--brand-soft)]"
               onClick={() =>
                 setSelectedChatIds(
-                  selectedAll ? [] : publishable.map((chat) => chat.chatId),
+                  selectedAll
+                    ? []
+                    : publishable.slice(0, 25).map((chat) => chat.chatId),
                 )
               }
             >
-              {selectedAll ? "Tanlovni tozalash" : "Barchasini tanlash"}
+              {selectedAll
+                ? "Tanlovni tozalash"
+                : publishable.length > 25
+                  ? "25 tasini tanlash"
+                  : "Barchasini tanlash"}
             </button>
           </div>
 
@@ -699,7 +713,9 @@ function BulkPublishSheet({
                 <button
                   type="button"
                   key={chat.id}
-                  disabled={formLocked}
+                  disabled={
+                    formLocked || (!active && eligibleChatIds.length >= 25)
+                  }
                   onClick={() =>
                     setSelectedChatIds((current) =>
                       active
@@ -754,13 +770,22 @@ function BulkPublishSheet({
               mumkin.
             </p>
           )}
+          {eligibleChatIds.length > 0 && (
+            <p className="mt-3 text-center text-[11px] font-bold text-[var(--muted)]">
+              {selectionCount} mahsulot × {eligibleChatIds.length} chat ={" "}
+              {selectionCount * eligibleChatIds.length} ta ikki tilli post
+            </p>
+          )}
           <Button
             className="mt-3.5 min-h-11 w-full"
             disabled={
-              !selectedChatIds.length || prefixInvalid || !programEnabled
+              (!eligibleChatIds.length && !submittedPayload) ||
+              prefixInvalid ||
+              !programEnabled
             }
             loading={mutation.isPending}
             onClick={() => {
+              if (sending.current) return;
               const payload =
                 submittedPayload ??
                 ({
@@ -768,7 +793,7 @@ function BulkPublishSheet({
                   ...(namePrefix.trim()
                     ? { namePrefix: namePrefix.trim() }
                     : {}),
-                  chatIds: selectedChatIds,
+                  chatIds: eligibleChatIds,
                   createIdempotencyKey: createIdempotencyKey(),
                   publishIdempotencyKey: createIdempotencyKey(),
                 } as BulkReferralSelection & {
@@ -778,17 +803,21 @@ function BulkPublishSheet({
                   publishIdempotencyKey: string;
                 });
               if (!submittedPayload) setSubmittedPayload(payload);
+              sending.current = true;
               mutation.mutate(payload, {
                 onSuccess: () => haptic("success"),
                 onError: () => haptic("error"),
+                onSettled: () => {
+                  sending.current = false;
+                },
               });
             }}
           >
             <Send className="h-4 w-4" />
             {mutation.isError
               ? "Xavfsiz qayta urinish"
-              : selectedChatIds.length
-                ? `${selectionCount} ta referalni ${selectedChatIds.length} ta chatga yuborish`
+              : eligibleChatIds.length
+                ? `${selectionCount} ta referalni ${eligibleChatIds.length} ta chatga yuborish`
                 : "Chatlarni tanlang"}
           </Button>
         </>

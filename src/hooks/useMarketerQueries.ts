@@ -218,12 +218,12 @@ export function usePublishReferral() {
     mutationFn: ({
       referralId,
       chatIds,
-      language,
+      idempotencyKey,
     }: {
       referralId: string;
       chatIds: string[];
-      language: "uz" | "ru";
-    }) => marketerApi.publishReferral(referralId, { chatIds, language }),
+      idempotencyKey: string;
+    }) => marketerApi.publishReferral(referralId, { chatIds, idempotencyKey }),
   });
 }
 

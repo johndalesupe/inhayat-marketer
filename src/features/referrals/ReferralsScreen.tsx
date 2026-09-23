@@ -5,11 +5,18 @@ import {
   CheckCircle2,
   CircleX,
   Filter,
+  LoaderCircle,
   Megaphone,
   Search,
   Send,
 } from "lucide-react";
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { clsx } from "clsx";
 import {
   useBotChats,
@@ -18,7 +25,7 @@ import {
   useReferrals,
 } from "@/src/hooks/useMarketerQueries";
 import { useInfiniteSentinel } from "@/src/hooks/useInfiniteSentinel";
-import { apiErrorMessage } from "@/src/lib/api";
+import { apiErrorMessage, createIdempotencyKey } from "@/src/lib/api";
 import type { MarketerReferral, ReferralStatus } from "@/src/types/marketer";
 import { useTelegram } from "@/src/telegram/TelegramProvider";
 import { ReferralCard } from "@/src/features/referrals/components/ReferralCard";
@@ -84,13 +91,29 @@ function PublishSheet({
   const jobQuery = usePublicationJob(publish.data?.jobId);
   const { haptic } = useTelegram();
   const [selected, setSelected] = useState<string[]>([]);
-  const [language, setLanguage] = useState<"uz" | "ru">("uz");
+  const [submittedPayload, setSubmittedPayload] = useState<{
+    referralId: string;
+    chatIds: string[];
+    idempotencyKey: string;
+  } | null>(null);
+  const sending = useRef(false);
 
   const publishable = chatsQuery.data?.filter((chat) => chat.canPublish) ?? [];
+  const selectedChatIds = selected.filter((id) =>
+    publishable.some((chat) => chat.chatId === id),
+  );
+  const formLocked = publish.isPending || submittedPayload !== null;
+  const terminal =
+    jobQuery.data?.status === "completed" || jobQuery.data?.status === "failed";
+  const partial =
+    terminal && Boolean(jobQuery.data?.failedCount && jobQuery.data.sentCount);
+  const close = () => {
+    if (!sending.current) onClose();
+  };
   return (
     <BottomSheet
       open
-      onClose={onClose}
+      onClose={close}
       title="Telegramga yuborish"
       description="Bot administrator bo'lgan guruh va kanallarni tanlang."
     >
@@ -106,16 +129,20 @@ function PublishSheet({
           >
             {jobQuery.data?.status === "failed" ? (
               <CircleX className="h-6 w-6" />
+            ) : !terminal ? (
+              <LoaderCircle className="h-6 w-6 animate-spin" />
             ) : (
               <CheckCircle2 className="h-6 w-6" />
             )}
           </span>
           <h3 className="mt-2.5 text-base font-extrabold text-[var(--ink)]">
-            {jobQuery.data?.status === "completed"
-              ? "Xabarlar yuborildi"
-              : jobQuery.data?.status === "failed"
-                ? "Yuborish yakunlanmadi"
-                : "Xabarlar yuborilmoqda"}
+            {partial
+              ? "Xabarlar qisman yuborildi"
+              : jobQuery.data?.status === "completed"
+                ? "Xabarlar yuborildi"
+                : jobQuery.data?.status === "failed"
+                  ? "Yuborish yakunlanmadi"
+                  : "Xabarlar yuborilmoqda"}
           </h3>
           <p className="mt-1 text-sm font-medium text-[var(--muted)]">
             {jobQuery.data
@@ -131,7 +158,25 @@ function PublishSheet({
               {jobQuery.data.error}
             </p>
           )}
-          <Button className="mt-3.5 min-h-10 w-full" onClick={onClose}>
+          {jobQuery.data?.results
+            .filter((result) => !result.ok)
+            .map((result) => (
+              <p
+                key={result.chatId}
+                className="mt-2 text-left text-xs text-[var(--danger)]"
+              >
+                {chatsQuery.data?.find(
+                  (chat) => chat.chatId === String(result.chatId),
+                )?.title ?? result.chatId}
+                : {result.error ?? "Yuborilmadi"}
+              </p>
+            ))}
+          {jobQuery.isError && (
+            <p role="status" className="mt-3 text-xs text-[var(--warning)]">
+              Holatni yangilab bo&apos;lmadi. Yuborish serverda davom etmoqda.
+            </p>
+          )}
+          <Button className="mt-3.5 min-h-10 w-full" onClick={close}>
             {jobQuery.data?.status === "queued" ||
             jobQuery.data?.status === "running"
               ? "Orqa fonda davom etsin"
@@ -157,25 +202,15 @@ function PublishSheet({
         />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-1 rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-1">
-            {[
-              { value: "uz" as const, label: "O'zbekcha" },
-              { value: "ru" as const, label: "Ruscha" },
-            ].map((item) => (
-              <button
-                key={item.value}
-                onClick={() => setLanguage(item.value)}
-                aria-pressed={language === item.value}
-                className={clsx(
-                  "h-9 rounded-lg border text-xs font-bold",
-                  language === item.value
-                    ? "border-[var(--line)] bg-[var(--surface)] text-[var(--brand)]"
-                    : "border-transparent text-[var(--muted)]",
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
+          <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-3">
+            <p className="text-xs font-extrabold text-[var(--ink)]">
+              O&apos;zbekcha + Русский · Bitta post
+            </p>
+            <p className="mt-1 text-[11px] leading-5 text-[var(--muted)]">
+              Rasm yoki video, ikkala tildagi matn va referal tugmalari har bir
+              chatga bitta postda yuboriladi. Bir yuborishda 25 tagacha chat
+              tanlang.
+            </p>
           </div>
           <div className="mt-3 space-y-2">
             {publishable.map((chat) => {
@@ -183,6 +218,9 @@ function PublishSheet({
               return (
                 <button
                   key={chat.id}
+                  disabled={
+                    formLocked || (!active && selectedChatIds.length >= 25)
+                  }
                   onClick={() =>
                     setSelected((current) =>
                       active
@@ -224,30 +262,39 @@ function PublishSheet({
           {publish.isError && (
             <p className="mt-3 rounded-xl border border-[var(--danger-line)] bg-[var(--danger-soft)] p-3 text-xs font-semibold text-[var(--danger)]">
               {apiErrorMessage(publish.error, "Post yuborilmadi")}
+              <span className="mt-1 block">
+                Qayta urinish avvalgi yuborish vazifasini davom ettiradi.
+              </span>
             </p>
           )}
           <Button
             className="mt-3.5 min-h-10 w-full"
-            disabled={!selected.length}
+            disabled={!selectedChatIds.length && !submittedPayload}
             loading={publish.isPending}
             onClick={() => {
-              publish.mutate(
-                {
-                  referralId: referral.id,
-                  chatIds: selected,
-                  language,
+              if (sending.current) return;
+              const payload = submittedPayload ?? {
+                referralId: referral.id,
+                chatIds: selectedChatIds,
+                idempotencyKey: createIdempotencyKey(),
+              };
+              setSubmittedPayload(payload);
+              sending.current = true;
+              publish.mutate(payload, {
+                onSuccess: () => haptic("success"),
+                onError: () => haptic("error"),
+                onSettled: () => {
+                  sending.current = false;
                 },
-                {
-                  onSuccess: () => haptic("success"),
-                  onError: () => haptic("error"),
-                },
-              );
+              });
             }}
           >
             <Send className="h-4 w-4" />
-            {selected.length
-              ? `${selected.length} ta chatga yuborish`
-              : "Chatlarni tanlang"}
+            {publish.isError
+              ? "Qayta urinish"
+              : selectedChatIds.length
+                ? `${selectedChatIds.length} ta chatga yuborish`
+                : "Chatlarni tanlang"}
           </Button>
         </>
       )}
@@ -260,8 +307,9 @@ export function ReferralsScreen() {
   const deferredSearch = useDeferredValue(search.trim());
   const [status, setStatus] = useState<ReferralStatus | "all">("all");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [linkReferral, setLinkReferral] =
-    useState<MarketerReferral | null>(null);
+  const [linkReferral, setLinkReferral] = useState<MarketerReferral | null>(
+    null,
+  );
   const [publishReferral, setPublishReferral] =
     useState<MarketerReferral | null>(null);
   const query = useReferrals({ search: deferredSearch, status });
