@@ -103,6 +103,15 @@ type PageQuery = {
 };
 
 export const marketerApi = {
+  marketingApiSettings: () =>
+    request<MarketingApiSettings>({
+      url: "/api/v1/marketer/marketing-api",
+    }),
+  rotateMarketingApiKey: () =>
+    request<{ apiKey: string; keySuffix: string; createdAt: string }>({
+      url: "/api/v1/marketer/marketing-api/key/rotate",
+      method: "POST",
+    }),
   authenticate: (initData: string, startParam?: string) =>
     request<TelegramAuthResponse>({
       url: "/api/v1/marketer/auth/telegram",
@@ -319,4 +328,12 @@ export const marketerApi = {
       },
       headers: { "Idempotency-Key": payload.idempotencyKey },
     }),
+};
+
+export type MarketingApiSettings = {
+  hasKey: boolean;
+  keySuffix: string | null;
+  createdAt: string | null;
+  endpoint: string;
+  streams: { streamID: number; name: string; productName: string | null }[];
 };

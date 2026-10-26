@@ -7,6 +7,7 @@ import {
   ChevronRight,
   CircleHelp,
   LockKeyhole,
+  Code2,
   PackageSearch,
   Phone,
   Send,
@@ -465,6 +466,12 @@ export function AccountScreen() {
           icon={PackageSearch}
           title="Buyurtmalarim"
           description="Referallardan kelgan maxfiylikka mos buyurtmalar"
+        />
+        <AccountLink
+          href="/account/marketing-api"
+          icon={Code2}
+          title="Marketing API"
+          description="Facebook va boshqa platformalardan lead qabul qilish"
         />
       </Panel>
 
