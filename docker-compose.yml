@@ -1,53 +1,39 @@
+# Production image only. Use the central deploy.py for health-gated traffic switching.
 services:
-  inhayot-marketer-web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        NODE_BASE_IMAGE: ${NODE_BASE_IMAGE:-node:22-alpine}
-        NEXT_PUBLIC_MARKETER_API_URL: ${NEXT_PUBLIC_MARKETER_API_URL:-https://api.inhayat.com}
-        NEXT_PUBLIC_MARKETER_BOT_USERNAME: ${NEXT_PUBLIC_MARKETER_BOT_USERNAME:-nhayat_marketing_bot}
-        NEXT_PUBLIC_MARKETER_SUPPORT_URL: ${NEXT_PUBLIC_MARKETER_SUPPORT_URL:-https://t.me/inhayat}
-    container_name: inhayot-marketer-web
+  app:
+    image: ${APP_IMAGE:?set an immutable registry image@sha256 digest}
+    init: true
     restart: unless-stopped
-    expose:
-      - "3004"
+    env_file:
+      - path: ${APP_ENV_FILE:-.env.production}
+        required: false
+        format: raw
     environment:
       NODE_ENV: production
       PORT: 3004
       HOSTNAME: 0.0.0.0
-      NEXT_PUBLIC_MARKETER_API_URL: ${NEXT_PUBLIC_MARKETER_API_URL:-https://api.inhayat.com}
-      NEXT_PUBLIC_MARKETER_BOT_USERNAME: ${NEXT_PUBLIC_MARKETER_BOT_USERNAME:-nhayat_marketing_bot}
-      NEXT_PUBLIC_MARKETER_SUPPORT_URL: ${NEXT_PUBLIC_MARKETER_SUPPORT_URL:-https://t.me/inhayat}
+      NODE_OPTIONS: "--max-old-space-size=${APP_HEAP_MB:-160}"
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-https://api.inhayat.com/api/v1}
+    expose:
+      - "3004"
     networks:
-      - cu24-network
-    healthcheck:
-      test:
-        ["CMD-SHELL", "wget -qO- http://localhost:3004/api/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=cu24-network
-      - traefik.http.routers.inhayot-marketer-web-http.rule=Host(`${MARKETER_WEB_HOST:-marketing.inhayat.com}`)
-      - traefik.http.routers.inhayot-marketer-web-http.entrypoints=web
-      - traefik.http.routers.inhayot-marketer-web-http.middlewares=inhayot-marketer-web-https-redirect
-      - traefik.http.routers.inhayot-marketer-web-http.service=inhayot-marketer-web
-      - traefik.http.routers.inhayot-marketer-web-http.priority=100
-      - traefik.http.middlewares.inhayot-marketer-web-https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.inhayot-marketer-web-https-redirect.redirectscheme.permanent=true
-      - traefik.http.routers.inhayot-marketer-web.rule=Host(`${MARKETER_WEB_HOST:-marketing.inhayat.com}`)
-      - traefik.http.routers.inhayot-marketer-web.entrypoints=websecure
-      - traefik.http.routers.inhayot-marketer-web.tls=true
-      - traefik.http.routers.inhayot-marketer-web.tls.certresolver=letsencrypt
-      - traefik.http.routers.inhayot-marketer-web.service=inhayot-marketer-web
-      - traefik.http.routers.inhayot-marketer-web.priority=100
-      - traefik.http.services.inhayot-marketer-web.loadbalancer.server.port=3004
-      - traefik.http.services.inhayot-marketer-web.loadbalancer.passhostheader=true
-
+      edge:
+        aliases:
+          - inhayat-marketer-web-${DEPLOY_SLOT:-manual}
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: ${APP_MEMORY_LIMIT:-256m}
+    cpus: ${APP_CPU_LIMIT:-0.5}
+    stop_grace_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
 networks:
-  cu24-network:
+  edge:
     external: true
-    name: cu24-network
+    name: inhayat-edge

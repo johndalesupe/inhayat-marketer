@@ -12,3 +12,11 @@ yarn-error.log*
 .vscode
 .idea
 tsconfig.tsbuildinfo
+
+**/node_modules
+.temp
+.tmp
+.github
+*.pem
+*.key
+coverage

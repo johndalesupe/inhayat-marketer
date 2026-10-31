@@ -4,6 +4,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  deploymentId: process.env.RELEASE_ID || undefined,
   images: {
     unoptimized: true,
     remotePatterns: [

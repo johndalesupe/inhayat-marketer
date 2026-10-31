@@ -1,53 +1,39 @@
-ARG NODE_BASE_IMAGE=node:22-alpine
-
+# syntax=docker/dockerfile:1.7
+# Build in CI. Production hosts only pull the resulting immutable image.
+ARG NODE_BASE_IMAGE=node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
 FROM ${NODE_BASE_IMAGE} AS deps
 WORKDIR /app
-
 RUN apk add --no-cache libc6-compat
-
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
-FROM ${NODE_BASE_IMAGE} AS builder
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
+FROM deps AS builder
 COPY . .
-
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS=--max-old-space-size=2048
-
+ENV NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS=--max-old-space-size=3072
+ARG RELEASE_ID=local
+ENV RELEASE_ID=$RELEASE_ID
 ARG NEXT_PUBLIC_MARKETER_API_URL
 ARG NEXT_PUBLIC_MARKETER_BOT_USERNAME
 ARG NEXT_PUBLIC_MARKETER_SUPPORT_URL
-
 ENV NEXT_PUBLIC_MARKETER_API_URL=$NEXT_PUBLIC_MARKETER_API_URL
 ENV NEXT_PUBLIC_MARKETER_BOT_USERNAME=$NEXT_PUBLIC_MARKETER_BOT_USERNAME
 ENV NEXT_PUBLIC_MARKETER_SUPPORT_URL=$NEXT_PUBLIC_MARKETER_SUPPORT_URL
-
-RUN npm run build
+# The stable Server Actions key is a BuildKit secret, never a build argument.
+RUN --mount=type=secret,id=next_actions_key \
+    --mount=type=secret,id=sentry_auth_token \
+    if [ -s /run/secrets/next_actions_key ]; then export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="$(cat /run/secrets/next_actions_key)"; fi; \
+    if [ -s /run/secrets/sentry_auth_token ]; then export SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token)"; fi; \
+    npm run build
 
 FROM ${NODE_BASE_IMAGE} AS runner
 WORKDIR /app
-
-RUN apk add --no-cache wget \
-  && addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs
-
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3004
-ENV HOSTNAME=0.0.0.0
-
-COPY --from=builder /app/public ./public
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3004 HOSTNAME=0.0.0.0
+RUN apk add --no-cache wget && addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
 USER nextjs
-
 EXPOSE 3004
-
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=30s \
-  CMD wget -qO- http://localhost:3004/api/health || exit 1
-
+HEALTHCHECK --interval=20s --timeout=5s --retries=3 --start-period=45s \
+  CMD wget -q -O /dev/null -T 4 http://127.0.0.1:3004/api/health || exit 1
 CMD ["node", "server.js"]

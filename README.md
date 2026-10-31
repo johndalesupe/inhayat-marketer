@@ -24,25 +24,7 @@ npm run dev
 
 ## Docker Compose va Traefik
 
-Production frontend `marketing.inhayat.com` domeniga tayyorlangan. DNS
-provayderida shu domen uchun `A` (va kerak bo'lsa `AAAA`) yozuvini Traefik
-ishlayotgan serverga yo'naltiring. Traefikda `web`, `websecure` entrypointlari,
-`letsencrypt` certificate resolver va tashqi `cu24-network` mavjud bo'lishi
-kerak.
-
-`.env.example` faylidan `.env` yarating va kamida bot username qiymatini
-tekshiring. So'ng:
-
-```bash
-docker network inspect cu24-network >/dev/null 2>&1 \
-  || docker network create cu24-network
-docker compose up -d --build
-docker compose ps
-```
-
-Compose HTTP so'rovlarini HTTPS'ga yo'naltiradi va
-`marketing.inhayat.com` uchun TLS sertifikatini Traefik orqali avtomatik
-oladi. Frontend healthcheck manzili: `/api/health`.
+Production CI, `inhayat-edge` tarmog'i va xavfsiz deploy tartibi: [DEPLOYMENT.md](DEPLOYMENT.md). VPS ichida image build qilmang.
 
 Server loyihasining `.env` faylida quyidagi qiymat aynan mos bo'lishi kerak:
 
