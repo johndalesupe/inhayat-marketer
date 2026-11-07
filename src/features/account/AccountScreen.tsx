@@ -1,5 +1,7 @@
 "use client";
 
+import { useOperatorContact } from "@/src/hooks/useOperatorContact";
+
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
   BadgeCheck,
@@ -182,7 +184,9 @@ function PhoneVerificationSheet({
               />
             )}
           />
-          <FieldError message={phoneForm.formState.errors.phoneNumber?.message} />
+          <FieldError
+            message={phoneForm.formState.errors.phoneNumber?.message}
+          />
           {requestOtp.isError && (
             <p className="mt-3 rounded-lg border border-[var(--danger-line)] bg-[var(--danger-soft)] p-2.5 text-xs font-semibold text-[var(--danger)]">
               {apiErrorMessage(requestOtp.error, "SMS kod yuborilmadi")}
@@ -248,7 +252,10 @@ function PhoneVerificationSheet({
             </p>
           )}
           {requestOtp.isError && (
-            <p role="alert" className="mt-3 rounded-lg border border-[var(--danger-line)] bg-[var(--danger-soft)] p-2.5 text-xs font-semibold text-[var(--danger)]">
+            <p
+              role="alert"
+              className="mt-3 rounded-lg border border-[var(--danger-line)] bg-[var(--danger-soft)] p-2.5 text-xs font-semibold text-[var(--danger)]"
+            >
               {apiErrorMessage(requestOtp.error, "SMS kod qayta yuborilmadi")}
             </p>
           )}
@@ -262,7 +269,9 @@ function PhoneVerificationSheet({
           </Button>
           <button
             type="button"
-            disabled={resendIn > 0 || requestOtp.isPending || verifyOtp.isPending}
+            disabled={
+              resendIn > 0 || requestOtp.isPending || verifyOtp.isPending
+            }
             onClick={() => requestOtp.mutate(submittedPhoneNumber)}
             className="mt-2 h-10 w-full text-xs font-extrabold text-[var(--brand)] disabled:text-[var(--muted)]"
           >
@@ -273,7 +282,11 @@ function PhoneVerificationSheet({
           <button
             type="button"
             disabled={requestOtp.isPending || verifyOtp.isPending}
-            onClick={() => { setPhase("phone"); requestOtp.reset(); verifyOtp.reset(); }}
+            onClick={() => {
+              setPhase("phone");
+              requestOtp.reset();
+              verifyOtp.reset();
+            }}
             className="h-10 w-full text-xs font-semibold text-[var(--muted)]"
           >
             Telefon raqamini o&apos;zgartirish
@@ -339,8 +352,7 @@ export function AccountScreen() {
   const query = useProfile();
   const { openTelegramLink } = useTelegram();
   const profile = query.data ?? sessionProfile;
-  const supportUrl =
-    process.env.NEXT_PUBLIC_MARKETER_SUPPORT_URL ?? "https://t.me/inhayat";
+  const supportUrl = useOperatorContact("marketer").data?.url;
 
   if (query.isLoading && !profile) return <PageSkeleton />;
   if (query.isError && !profile) {
@@ -478,7 +490,10 @@ export function AccountScreen() {
       <Panel className="overflow-hidden rounded-xl">
         <button
           type="button"
-          onClick={() => openTelegramLink(supportUrl)}
+          disabled={!supportUrl}
+          onClick={() => {
+            if (supportUrl) openTelegramLink(supportUrl);
+          }}
           className="flex w-full items-center gap-2.5 border-b border-[var(--line)] px-3 py-3 text-left active:bg-[var(--surface-muted)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--brand)]"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] text-[var(--muted)]">
